@@ -308,12 +308,15 @@ export default function AuctionPage() {
   async function cancelLot(lot: Lot) {
     setBusy(true);
     try {
-      const result = await request<{ refundedAmount: number }>(`/lots/${lot.id}`, token, { method: "DELETE" });
+      const result = await request<{ refundedAmount: number; imageCleanupWarning?: string }>(`/lots/${lot.id}`, token, { method: "DELETE" });
       setLotPendingCancellation(null);
       setSelected(null);
-      setNotice(result.refundedAmount > 0
+      const cancellationNotice = result.refundedAmount > 0
         ? `Lote cancelado. ${money(result.refundedAmount)} devolvidos ao licitante.`
-        : "Lote cancelado.");
+        : "Lote cancelado.";
+      setNotice(result.imageCleanupWarning
+        ? `${cancellationNotice} ${result.imageCleanupWarning}`
+        : cancellationNotice);
       await loadLots();
     }
     catch (reason) { setError((reason as Error).message); }
