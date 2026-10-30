@@ -1,4 +1,4 @@
-import { ArrowRight, FileText, LogOut, PackageCheck, Plus, WalletCards } from "lucide-react";
+import { ArrowRight, ClipboardList, FileText, LogOut, PackageCheck, Plus, WalletCards } from "lucide-react";
 import { ThemeToggle } from "../../../../shared/components";
 import { SiteHeader } from "../../../../shared/layout";
 import type { User, Wallet } from "../../AuctionPage.types";
@@ -13,6 +13,7 @@ type AuctionHeaderProps = {
   onToggleProfileMenu: () => void;
   onOpenAuctionedCards: () => void;
   onOpenReports: () => void;
+  onOpenAudit: () => void;
   onOpenAcquiredCards: () => void;
   onLogout: () => void;
   onLogin: () => void;
@@ -28,6 +29,7 @@ export function AuctionHeader({
   onToggleProfileMenu,
   onOpenAuctionedCards,
   onOpenReports,
+  onOpenAudit,
   onOpenAcquiredCards,
   onLogout,
   onLogin
@@ -58,7 +60,8 @@ export function AuctionHeader({
             <>
               <div className="profile-menu-wrap">
                 <button
-                  className="user-avatar"
+                    type="button"
+                    className="user-avatar"
                   aria-label={`Abrir perfil de ${user.name}`}
                   aria-expanded={profileMenuOpen}
                   onClick={onToggleProfileMenu}
@@ -69,15 +72,20 @@ export function AuctionHeader({
                   <div className="profile-menu" role="menu">
                     <div className="profile-menu-name">{user.name}</div>
                     {user.role === "AUCTIONEER" && (
-                      <button role="menuitem" onClick={onOpenAuctionedCards}>
+                      <button type="button" role="menuitem" onClick={onOpenAuctionedCards}>
                         <PackageCheck size={15} /> Cartas leiloadas
                       </button>
                     )}
-                    <button role="menuitem" onClick={onOpenReports}>
+                    {user.role === "AUCTIONEER" && (
+                      <button type="button" role="menuitem" onClick={onOpenAudit}>
+                        <ClipboardList size={15} /> Auditoria
+                      </button>
+                    )}
+                    <button type="button" role="menuitem" onClick={onOpenReports}>
                       <FileText size={15} /> Relatórios
                     </button>
                     {user.role === "BIDDER" && (
-                      <button role="menuitem" onClick={onOpenAcquiredCards}>
+                      <button type="button" role="menuitem" onClick={onOpenAcquiredCards}>
                         <PackageCheck size={15} /> Cartas adquiridas
                       </button>
                     )}

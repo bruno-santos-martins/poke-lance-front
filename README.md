@@ -59,14 +59,18 @@ Valores monetários são inteiros em centavos BRL. As imagens Pokémon são obti
 
 O serviço de liquidação verifica lotes expirados a cada cinco segundos. O bloqueio do lote e das carteiras e as atualizações financeiras ocorrem numa transação PostgreSQL; lances guardam sequência e hash encadeado para auditoria pública.
 
+O leiloeiro pode cancelar os próprios lotes ainda abertos. O lote deixa de aparecer na vitrine, mas permanece guardado com o histórico; se houver um lance vigente, o valor comprometido é liberado na carteira do licitante. A tabela `Audit` regista criação de contas, sessões, lotes, lances, depósitos, cancelamentos e liquidações, identificando responsável, ação, data e detalhes. Os registos de uma operação financeira são gravados na mesma transação dessa operação.
+
 ## API principal
 
 - `POST /api/auth/register`, `POST /api/auth/login`
 - `GET /api/pokemon/search?q=cha` — sugestões de Pokémon pesquisadas na PokéAPI (cache local por 10 minutos)
+- `GET /api/pokemon/:id` — detalhes do Pokémon selecionado, usados no preview de criação do lote
 - `GET /api/lots`, `GET /api/lots/:id`, `POST /api/lots`, `DELETE /api/lots/:id`
 - `POST /api/lots/:id/bids`
 - `GET /api/wallet`, `POST /api/wallet/deposits`
 - `GET /api/bidder/report` — relatório autenticado com histórico de lances e extrato financeiro
+- `GET /api/seller/audit` — auditoria autenticada dos próprios lotes e atividades do leiloeiro
 - `GET /api/lots/:id/audit`, `GET /api/receipts/:id`
 - `GET /api/seller/reports`
 - WebSocket: salas `lot:join` / `lot:leave`, eventos `bid:placed`, `lot:updated`, `lots:updated`

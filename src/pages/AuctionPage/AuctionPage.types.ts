@@ -1,7 +1,15 @@
 export type User = { id: string; name: string; role: "AUCTIONEER" | "BIDDER" };
 export type PokemonSuggestion = { id: number; name: string };
+export type PokemonPreview = PokemonSuggestion & {
+  imageUrl: string;
+  types: string[];
+  height: number;
+  weight: number;
+  stats: Record<string, number>;
+};
 export type Lot = {
   id: string;
+  sellerId: string;
   title: string;
   imagePath: string;
   types: string[];
@@ -27,6 +35,19 @@ export type SellerReport = {
   lots: { id: string; title: string; settledAt: string | null; winner: string | null; amount: number }[];
   totalReceived: number;
 };
+export type SellerAuditEntry = {
+  id: string;
+  actorId: string | null;
+  actorName: string;
+  actorRole: string;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  lotId: string | null;
+  lotTitle: string | null;
+  details: Record<string, unknown>;
+  createdAt: string;
+};
 export type SellerAuctionedLot = {
   id: string;
   pokemonId: number;
@@ -35,6 +56,7 @@ export type SellerAuctionedLot = {
   amount: number;
   settledAt: string | null;
   bidCount: number;
+  winner: { name: string; email: string } | null;
 };
 export type BidderReport = {
   wallet: Wallet;
@@ -49,7 +71,7 @@ export type BidderReport = {
   }[];
   transactions: {
     id: string;
-    type: "OPENING_BALANCE" | "OPENING_COMMITMENT" | "DEPOSIT" | "BID_COMMITTED" | "BID_RELEASED" | "AUCTION_DEBIT" | "AUCTION_CREDIT";
+    type: "OPENING_BALANCE" | "OPENING_COMMITMENT" | "DEPOSIT" | "BID_COMMITTED" | "BID_RELEASED" | "BID_REFUNDED" | "AUCTION_DEBIT" | "AUCTION_CREDIT";
     amount: number;
     lotId: string | null;
     lotTitle: string | null;
