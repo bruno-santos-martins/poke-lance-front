@@ -1,0 +1,1 @@
+export { PokemonTypeBadge } from "./PokemonTypeBadge";

@@ -1,8 +1,8 @@
 node_modules/
 dist/
+storybook-static/
+*.tsbuildinfo
 coverage/
 .env
 .env.*
 !.env.example
-uploads/cards/*
-!uploads/cards/.gitkeep

@@ -1,0 +1,11 @@
+.pokemonType {
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-2xs);
+}
+
+.electric { background: var(--pokemon-type-electric-background); color: var(--pokemon-type-electric-foreground); }
+.fire { background: var(--pokemon-type-fire-background); color: var(--pokemon-type-fire-foreground); }
+.water { background: var(--pokemon-type-water-background); color: var(--pokemon-type-water-foreground); }
+.grass { background: var(--pokemon-type-grass-background); color: var(--pokemon-type-grass-foreground); }
+.psychic { background: var(--pokemon-type-psychic-background); color: var(--pokemon-type-psychic-foreground); }
+.neutral { background: var(--pokemon-type-neutral-background); color: var(--pokemon-type-neutral-foreground); }

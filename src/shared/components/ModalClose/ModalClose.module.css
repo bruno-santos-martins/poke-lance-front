@@ -1,0 +1,25 @@
+.button {
+  position: absolute;
+  top: var(--modal-close-inset);
+  right: var(--modal-close-inset);
+  z-index: 1;
+  width: var(--modal-close-size);
+  height: var(--modal-close-size);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-muted);
+  color: var(--color-muted);
+}
+
+.button:hover {
+  background: var(--color-border);
+  color: var(--color-foreground);
+}
+
+.button:focus-visible {
+  outline: var(--outline-width) solid var(--color-accent);
+  outline-offset: var(--outline-offset);
+}

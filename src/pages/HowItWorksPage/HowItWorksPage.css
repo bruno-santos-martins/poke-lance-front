@@ -1,0 +1,31 @@
+.how-page .how-hero { padding: var(--space-how-hero-top) max(calc((100vw - var(--layout-page-width)) / 2), var(--layout-page-gutter)) var(--space-how-hero-bottom); background: var(--color-surface-muted); }
+.how-page .how-hero h1 { margin: var(--space-3-5) 0; color: var(--color-foreground); }
+.how-page .how-hero h1 span { color: var(--color-brand-primary); }
+.how-page .how-hero p { max-width: var(--layout-how-hero-copy-width); margin: 0; color: var(--color-muted); }
+.how-page .how-hero .button { margin-top: var(--space-6); }
+.how-page .how-content { max-width: var(--layout-how-content-width); margin: 0 auto; padding: var(--space-how-content-top) var(--space-6) var(--space-how-content-bottom); }
+.how-page .how-role-heading { display: flex; align-items: center; gap: var(--space-3-5); }
+.how-page .how-role-icon { width: var(--size-how-role-icon); height: var(--size-how-role-icon); display: grid; place-items: center; border-radius: var(--radius-how-role-icon); background: var(--color-how-role-icon-background); color: var(--color-brand-primary); }
+.how-page .how-role-icon.seller-icon { background: var(--color-seller-icon-background); color: var(--color-seller-icon-foreground); }
+.how-page .how-role-heading .section-kicker { font-size: var(--font-size-kicker); }
+.how-page .how-role-heading h2 { margin: var(--space-1) 0 0; }
+.how-page .how-steps { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--space-7); margin: var(--space-5) 0 var(--space-how-steps-bottom); }
+.how-page .how-step { min-height: var(--size-how-step-min-height); display: grid; grid-template-columns: var(--size-how-step-number-column) 1fr; gap: var(--space-2); padding: var(--space-how-step-block) 0; border-top: var(--border-width-default) solid var(--color-border); }
+.how-page .how-step > span { padding-top: var(--space-1px); color: var(--color-accent-text); }
+.how-page .how-step h3 { margin: 0 0 var(--space-2); color: var(--color-foreground); }
+.how-page .how-step p { margin: 0; color: var(--color-muted); }
+.how-page .seller-heading { padding-top: var(--space-1); }
+.how-page .how-integrity { display: flex; align-items: flex-start; gap: var(--space-4); padding: var(--space-5); border: var(--border-width-default) solid var(--color-integrity-border); border-radius: var(--radius-how-integrity); background: var(--color-integrity-background); color: var(--color-integrity-foreground); }
+.how-page .how-integrity > svg { flex: 0 0 auto; margin-top: var(--space-1); }
+.how-page .how-integrity h3 { margin: 0 0 var(--space-1); color: var(--color-integrity-heading); }
+.how-page .how-integrity p { margin: 0; color: var(--color-integrity-body); }
+.how-page .how-bottom-cta { display: flex; align-items: center; justify-content: space-between; gap: var(--space-how-bottom-cta-gap); margin-top: var(--space-how-bottom-cta-top); color: var(--color-foreground); }
+@media (max-width: 600px) {
+  .how-page .how-hero { padding: var(--space-how-hero-mobile-top) var(--space-6) var(--space-how-hero-mobile-bottom); }
+  .how-page .how-hero h1 { font-size: var(--font-size-page-title-mobile); }
+  .how-page .how-content { padding: var(--space-how-content-mobile-top) var(--space-5) var(--space-how-content-mobile-bottom); }
+  .how-page .how-role-heading h2 { font-size: var(--font-size-section-title-mobile); }
+  .how-page .how-steps { grid-template-columns: 1fr; gap: 0; margin-bottom: var(--space-how-steps-mobile-bottom); }
+  .how-page .how-step { min-height: unset; padding: var(--space-4) 0; }
+  .how-page .how-bottom-cta { align-items: flex-start; flex-direction: column; }
+}

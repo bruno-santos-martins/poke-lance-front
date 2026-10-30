@@ -1,0 +1,28 @@
+.receipt-page { position: relative; min-height: 100vh; padding: 30px 18px 60px; background: var(--color-surface-muted); }
+.receipt-brand { width: max-content; margin: 0 auto 25px; }
+.receipt-card { width: min(100%, 470px); margin: 0 auto; padding: 32px; border: 1px solid var(--palette-e8e4dc); border-radius: 9px; background: var(--color-surface); text-align: center; box-shadow: 0 15px 45px var(--palette-4e40200d); }
+.receipt-icon { width: 43px; height: 43px; margin: 0 auto 15px; display: grid; place-items: center; border-radius: 50%; background: var(--palette-e9f4e7); color: var(--palette-538b4d); }
+.receipt-card h1 { margin: 8px 0 18px; font: 800 24px var(--font-display); text-transform: capitalize; }
+.receipt-card > p { color: var(--palette-858178); font-size: 12px; }
+.receipt-image { width: 160px; height: 145px; margin: 2px auto 17px; object-fit: contain; }
+.receipt-amount { display: grid; gap: 5px; padding: 13px; border-radius: 6px; background: var(--palette-faf7f1); }
+.receipt-amount small { color: var(--palette-9b978f); font-size: 8px; font-weight: 700; letter-spacing: 1px; }
+.receipt-amount b { font: 800 25px var(--font-display); }
+.receipt-line { display: flex; justify-content: space-between; gap: 12px; padding: 12px 1px; border-bottom: 1px solid var(--palette-efede8); color: var(--palette-807c74); font-size: 10px; text-align: left; }
+.receipt-line strong { color: var(--palette-3a3832); text-align: right; }
+.receipt-privacy { display: flex; justify-content: center; align-items: center; gap: 7px; margin: 17px 0; color: var(--palette-7d786f); font-size: 9px; }
+.receipt-privacy svg { color: var(--palette-568d50); }
+.receipt-return { margin-top: 5px; }
+.receipt-theme-toggle { position: absolute; top: 20px; right: 22px; }
+
+:root[data-theme="dark"] .receipt-page { background: var(--color-background); }
+:root[data-theme="dark"] .receipt-card {
+  background: var(--color-surface);
+  color: var(--color-foreground);
+  border-color: var(--color-border);
+}
+:root[data-theme="dark"] .receipt-card h1,
+:root[data-theme="dark"] .receipt-line strong { color: var(--color-foreground); }
+:root[data-theme="dark"] .receipt-card > p,
+:root[data-theme="dark"] .receipt-line { color: var(--color-muted); }
+:root[data-theme="dark"] .receipt-amount { background: var(--color-surface-muted); }

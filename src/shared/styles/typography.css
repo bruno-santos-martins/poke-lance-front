@@ -1,0 +1,42 @@
+.type-page-title {
+  font-family: var(--font-display);
+  font-size: var(--font-size-page-title);
+  font-weight: var(--font-weight-extrabold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight-title);
+}
+
+.type-section-title {
+  font-family: var(--font-display);
+  font-size: var(--font-size-section-title);
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.type-card-title {
+  font-family: var(--font-display);
+  font-size: var(--font-size-body-compact);
+  font-weight: var(--font-weight-bold);
+}
+
+.type-body {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+}
+
+.type-body-compact {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-body);
+}
+
+.type-step-number {
+  font-family: var(--font-display);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.type-label {
+  font-family: var(--font-display);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+}
