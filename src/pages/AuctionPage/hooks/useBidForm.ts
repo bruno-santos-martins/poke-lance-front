@@ -7,13 +7,12 @@ import type { Lot } from "../AuctionPage.types";
 import { bidSchema, type BidFormValues } from "../schemas/bid.schema";
 
 type UseBidFormOptions = {
-  token: string;
   lot: Lot | null;
   onBidPlaced: (lot: Lot) => Promise<void>;
   onError: (message: string) => void;
 };
 
-export function useBidForm({ token, lot, onBidPlaced, onError }: UseBidFormOptions) {
+export function useBidForm({ lot, onBidPlaced, onError }: UseBidFormOptions) {
   const {
     register,
     handleSubmit,
@@ -33,7 +32,7 @@ export function useBidForm({ token, lot, onBidPlaced, onError }: UseBidFormOptio
     if (!lot) return;
     onError("");
     try {
-      await request(`/lots/${lot.id}/bids`, token, {
+      await request(`/lots/${lot.id}/bids`, {
         method: "POST",
         body: JSON.stringify({ amount: convertReaisToCentavos(values.amount) })
       });

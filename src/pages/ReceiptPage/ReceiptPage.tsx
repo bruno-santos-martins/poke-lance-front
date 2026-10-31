@@ -17,8 +17,7 @@ type Receipt = {
 };
 
 async function loadReceipt(receiptId: string): Promise<Receipt> {
-  const token = localStorage.getItem("auction-token") ?? undefined;
-  return request<Receipt>(`/receipts/${receiptId}`, token);
+  return request<Receipt>(`/receipts/${receiptId}`);
 }
 
 export default function ReceiptPage({ id }: { id: string }) {

@@ -1,11 +1,18 @@
 export const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
 
-export async function request<T>(path: string, token?: string, init?: RequestInit): Promise<T> {
+export class ApiError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}/api${path}`, {
     ...init,
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...init?.headers
     }
   });
@@ -18,7 +25,7 @@ export async function request<T>(path: string, token?: string, init?: RequestIni
   }
 
   if (!response.ok) {
-    throw new Error(data.error ?? "Não foi possível concluir o pedido.");
+    throw new ApiError(data.error ?? "Não foi possível concluir o pedido.", response.status);
   }
 
   return data as T;

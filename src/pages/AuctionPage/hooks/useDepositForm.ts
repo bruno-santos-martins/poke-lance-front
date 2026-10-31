@@ -5,12 +5,11 @@ import { convertReaisToCentavos } from "../../../shared/utils";
 import { depositSchema, type DepositFormValues } from "../schemas/deposit.schema";
 
 type UseDepositFormOptions = {
-  token: string;
   onDeposited: () => Promise<void>;
   onError: (message: string) => void;
 };
 
-export function useDepositForm({ token, onDeposited, onError }: UseDepositFormOptions) {
+export function useDepositForm({ onDeposited, onError }: UseDepositFormOptions) {
   const {
     register,
     handleSubmit,
@@ -25,7 +24,7 @@ export function useDepositForm({ token, onDeposited, onError }: UseDepositFormOp
   const submit = handleSubmit(async (values) => {
     onError("");
     try {
-      await request("/wallet/deposits", token, {
+      await request("/wallet/deposits", {
         method: "POST",
         body: JSON.stringify({ amount: convertReaisToCentavos(values.amount) })
       });

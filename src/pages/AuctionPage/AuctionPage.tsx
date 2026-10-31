@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "react";
 import { io } from "socket.io-client";
 import { AlertTriangle } from "lucide-react";
-import { API_BASE_URL as API, request } from "../../shared/api/request";
+import { API_BASE_URL as API, ApiError, request } from "../../shared/api/request";
 import { ToastNotification } from "../../shared/components";
 import { SiteFooter } from "../../shared/layout";
 import { formatCurrencyBRL } from "../../shared/utils";
@@ -30,18 +30,17 @@ import type {
 } from "./AuctionPage.types";
 
 function searchPokemon(query: string, signal: AbortSignal): Promise<PokemonSuggestion[]> {
-  return request<PokemonSuggestion[]>(`/pokemon/search?q=${encodeURIComponent(query)}`, undefined, { signal });
+  return request<PokemonSuggestion[]>(`/pokemon/search?q=${encodeURIComponent(query)}`, { signal });
 }
 
 function loadPokemon(id: number, signal: AbortSignal): Promise<PokemonPreview> {
-  return request<PokemonPreview>(`/pokemon/${id}`, undefined, { signal });
+  return request<PokemonPreview>(`/pokemon/${id}`, { signal });
 }
 
 const money = formatCurrencyBRL;
 
 export default function AuctionPage() {
-  const [token, setToken] = useState(() => localStorage.getItem("auction-token") ?? "");
-  const [user, setUser] = useState<User | null>(() => JSON.parse(localStorage.getItem("auction-user") ?? "null") as User | null);
+  const [user, setUser] = useState<User | null>(null);
   const [lots, setLots] = useState<Lot[]>([]);
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [selected, setSelected] = useState<Lot | null>(null);
@@ -82,25 +81,20 @@ export default function AuctionPage() {
     try { setLots(await request<Lot[]>("/lots")); } catch (reason) { setError((reason as Error).message); }
   }, []);
   const loadWallet = useCallback(async () => {
-    if (token && user?.role === "BIDDER") {
-      try { setWallet(await request<Wallet>("/wallet", token)); } catch (reason) { setError((reason as Error).message); }
+    if (user?.role === "BIDDER") {
+      try { setWallet(await request<Wallet>("/wallet")); } catch (reason) { setError((reason as Error).message); }
     } else setWallet(null);
-  }, [token, user]);
+  }, [user]);
   const authForm = useAuthForm({
     mode: authMode,
     onAuthenticated: (result) => {
-      localStorage.setItem("auction-token", result.token);
-      localStorage.setItem("auction-user", JSON.stringify(result.user));
-      setToken(result.token);
       setUser(result.user);
       setAuthOpen(false);
       setNotice(`Bem-vindo, ${result.user.name}!`);
     },
     onError: setError
   });
-
   const createLotForm = useCreateLotForm({
-    token,
     pokemon: selectedPokemon,
     onCreated: () => {
       setCreateOpen(false);
@@ -111,7 +105,6 @@ export default function AuctionPage() {
   });
 
   const bidForm = useBidForm({
-    token,
     lot: selected,
     onBidPlaced: async (lot) => {
       setNotice("Lance registado e saldo comprometido.");
@@ -122,7 +115,6 @@ export default function AuctionPage() {
   });
 
   const depositForm = useDepositForm({
-    token,
     onDeposited: async () => {
       setNotice("Saldo adicionado à carteira.");
       await loadWallet();
@@ -131,7 +123,6 @@ export default function AuctionPage() {
   });
 
   const walletDepositForm = useDepositForm({
-    token,
     onDeposited: async () => {
       setNotice("Saldo adicionado à carteira.");
       await loadWallet();
@@ -139,10 +130,26 @@ export default function AuctionPage() {
     onError: setError
   });
 
+  useEffect(() => {
+    localStorage.removeItem("auction-token");
+    void request<{ user: User | null }>("/auth/session")
+      .then(({ user: sessionUser }) => setUser(sessionUser))
+      .catch((reason: unknown) => {
+        if (reason instanceof ApiError && reason.status === 401) {
+          setUser(null);
+          void request("/auth/logout", { method: "POST" }).catch((logoutError: unknown) => {
+            setError(logoutError instanceof Error ? logoutError.message : "Não foi possível encerrar a sessão.");
+          });
+          return;
+        }
+        setError(reason instanceof Error ? reason.message : "Não foi possível validar a sessão.");
+      });
+  }, []);
+
   useEffect(() => { void loadLots(); }, [loadLots]);
 
   useEffect(() => {
-    const socket = io(API, { auth: token ? { token } : {} });
+    const socket = io(API, { withCredentials: true });
     const refreshSelected = () => {
       void loadLots();
       if (selected) void request<Lot>(`/lots/${selected.id}`).then(setSelected).catch((reason: Error) => setError(reason.message));
@@ -153,7 +160,7 @@ export default function AuctionPage() {
     socket.on("wallet:updated", (updatedWallet: Wallet) => setWallet(updatedWallet));
     if (selected) socket.emit("lot:join", selected.id);
     return () => { if (selected) socket.emit("lot:leave", selected.id); socket.disconnect(); };
-  }, [selected, loadLots, token]);
+  }, [selected, loadLots]);
 
   useEffect(() => { void loadWallet(); }, [loadWallet]);
   useEffect(() => {
@@ -194,7 +201,16 @@ export default function AuctionPage() {
   }, [sellerAudit, sellerAuditPokemonFilter, sellerAuditFromDate, sellerAuditToDate]);
   const sellerAuditPageCount = Math.max(1, Math.ceil(filteredSellerAudit.length / 6));
   const visibleSellerAudit = filteredSellerAudit.slice((sellerAuditPage - 1) * 6, sellerAuditPage * 6);
-  const closeSession = () => { localStorage.removeItem("auction-token"); localStorage.removeItem("auction-user"); setToken(""); setUser(null); setWallet(null); };
+  async function closeSession() {
+    try {
+      await request("/auth/logout", { method: "POST" });
+    } catch (reason) {
+      setError((reason as Error).message);
+    } finally {
+      setUser(null);
+      setWallet(null);
+    }
+  }
   const beginAuth = () => { setError(""); setAuthOpen(true); };
   const closeAllModals = () => {
     setAuthOpen(false);
@@ -222,7 +238,7 @@ export default function AuctionPage() {
   async function cancelLot(lot: Lot) {
     setBusy(true);
     try {
-      const result = await request<{ refundedAmount: number; imageCleanupWarning?: string }>(`/lots/${lot.id}`, token, { method: "DELETE" });
+      const result = await request<{ refundedAmount: number; imageCleanupWarning?: string }>(`/lots/${lot.id}`, { method: "DELETE" });
       setLotPendingCancellation(null);
       setSelected(null);
       const cancellationNotice = result.refundedAmount > 0
@@ -247,7 +263,7 @@ export default function AuctionPage() {
     setSellerAuditPage(1);
     setSellerAuditOpen(true);
     setSellerAuditLoading(true);
-    try { setSellerAudit(await request<SellerAuditEntry[]>("/seller/audit", token)); }
+    try { setSellerAudit(await request<SellerAuditEntry[]>("/seller/audit")); }
     catch (reason) { setSellerAuditOpen(false); setError((reason as Error).message); }
     finally { setSellerAuditLoading(false); }
   }
@@ -255,7 +271,7 @@ export default function AuctionPage() {
   async function showReport() {
     setProfileMenuOpen(false);
     setError(""); setReport(null); setReportOpen(true);
-    try { setReport(await request<SellerReport>("/seller/reports", token)); }
+    try { setReport(await request<SellerReport>("/seller/reports")); }
     catch (reason) { setReportOpen(false); setError((reason as Error).message); }
   }
 
@@ -267,7 +283,7 @@ export default function AuctionPage() {
     setAuctionedCardsPage(1);
     setAuctionedCardsOpen(true);
     setAuctionedCardsLoading(true);
-    try { setAuctionedCards(await request<SellerAuctionedLot[]>("/seller/auctioned-lots", token)); }
+    try { setAuctionedCards(await request<SellerAuctionedLot[]>("/seller/auctioned-lots")); }
     catch (reason) { setAuctionedCardsOpen(false); setError((reason as Error).message); }
     finally { setAuctionedCardsLoading(false); }
   }
@@ -287,7 +303,7 @@ export default function AuctionPage() {
     setBidderReport(null);
     setBidderReportOpen(true);
     setBidderReportLoading(true);
-    try { setBidderReport(await request<BidderReport>("/bidder/report", token)); }
+    try { setBidderReport(await request<BidderReport>("/bidder/report")); }
     catch (reason) {
       const message = (reason as Error).message;
       setBidderReportError(message);
@@ -303,7 +319,7 @@ export default function AuctionPage() {
     setBidderReport(null);
     setAcquiredCardsOpen(true);
     setBidderReportLoading(true);
-    try { setBidderReport(await request<BidderReport>("/bidder/report", token)); }
+    try { setBidderReport(await request<BidderReport>("/bidder/report")); }
     catch (reason) {
       const message = (reason as Error).message;
       setBidderReportError(message);

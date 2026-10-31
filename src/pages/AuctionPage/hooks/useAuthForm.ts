@@ -5,7 +5,7 @@ import { getErrorMessage, request } from "../../../shared/api/request";
 import type { User } from "../AuctionPage.types";
 import { getAuthSchema, type AuthFormValues } from "../schemas/auth.schema";
 
-type AuthResponse = { token: string; user: User };
+type AuthResponse = { user: User };
 
 type UseAuthFormOptions = {
   mode: "login" | "register";
@@ -32,7 +32,7 @@ export function useAuthForm({ mode, onAuthenticated, onError }: UseAuthFormOptio
   const submit = handleSubmit(async (values) => {
     onError("");
     try {
-      const result = await request<AuthResponse>(`/auth/${mode}`, undefined, {
+      const result = await request<AuthResponse>(`/auth/${mode}`, {
         method: "POST",
         body: JSON.stringify(mode === "register"
           ? values

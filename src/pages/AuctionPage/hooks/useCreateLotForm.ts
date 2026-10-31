@@ -6,13 +6,12 @@ import type { PokemonPreview } from "../AuctionPage.types";
 import { createLotSchema, type CreateLotFormValues } from "../schemas/createLot.schema";
 
 type UseCreateLotFormOptions = {
-  token: string;
   pokemon: PokemonPreview | null;
   onCreated: () => void;
   onError: (message: string) => void;
 };
 
-export function useCreateLotForm({ token, pokemon, onCreated, onError }: UseCreateLotFormOptions) {
+export function useCreateLotForm({ pokemon, onCreated, onError }: UseCreateLotFormOptions) {
   const {
     register,
     handleSubmit,
@@ -31,7 +30,7 @@ export function useCreateLotForm({ token, pokemon, onCreated, onError }: UseCrea
       return;
     }
     try {
-      await request("/lots", token, {
+      await request("/lots", {
         method: "POST",
         body: JSON.stringify({
           pokemon: String(pokemon.id),
