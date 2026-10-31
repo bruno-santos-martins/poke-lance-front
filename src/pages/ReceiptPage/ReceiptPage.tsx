@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, BadgeCheck, ShieldCheck, X } from "lucide-react";
-import { API_BASE_URL as API } from "../../shared/api/request";
+import { API_BASE_URL as API, request } from "../../shared/api/request";
 import { ThemeToggle } from "../../shared/components";
 import { BrandLockup } from "../../shared/layout";
 import { formatCurrencyBRL, formatDateTime } from "../../shared/utils";
@@ -17,19 +17,8 @@ type Receipt = {
 };
 
 async function loadReceipt(receiptId: string): Promise<Receipt> {
-  const response = await fetch(`${API}/api/receipts/${receiptId}`, {
-    headers: {
-      ...(localStorage.getItem("auction-token")
-        ? { Authorization: `Bearer ${localStorage.getItem("auction-token")}` }
-        : {})
-    }
-  });
-  const receiptData = await response.json() as Receipt | { error?: string };
-
-  if (!response.ok) {
-    throw new Error("error" in receiptData ? receiptData.error : undefined);
-  }
-  return receiptData as Receipt;
+  const token = localStorage.getItem("auction-token") ?? undefined;
+  return request<Receipt>(`/receipts/${receiptId}`, token);
 }
 
 export default function ReceiptPage({ id }: { id: string }) {

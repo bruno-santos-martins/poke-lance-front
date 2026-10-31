@@ -1,8 +1,10 @@
-import type { FormEventHandler } from "react";
 import { ArrowDownToLine, ArrowRight, Gavel, ShieldCheck } from "lucide-react";
 import { API_BASE_URL as API } from "../../../../shared/api/request";
 import { Countdown, ModalClose, PokemonTypeBadge, TextInput } from "../../../../shared/components";
+import type { FormController } from "../../../../shared/forms/formTypes";
 import { formatDateTime, formatPokemonId } from "../../../../shared/utils";
+import type { BidFormValues } from "../../schemas/bid.schema";
+import type { DepositFormValues } from "../../schemas/deposit.schema";
 import type { Audit, Lot, User, Wallet } from "../../AuctionPage.types";
 
 type LotDetailsModalProps = {
@@ -10,16 +12,12 @@ type LotDetailsModalProps = {
   audit: Audit | null;
   user: User | null;
   wallet: Wallet | null;
-  bidValue: string;
-  deposit: string;
-  busy: boolean;
+  bidForm: FormController<BidFormValues>;
+  depositForm: FormController<DepositFormValues>;
+  cancelling: boolean;
   formatCurrency: (amount: number) => string;
   onClose: () => void;
   onBackToLot: () => void;
-  onBidValueChange: (value: string) => void;
-  onDepositChange: (value: string) => void;
-  onMakeBid: FormEventHandler<HTMLFormElement>;
-  onAddFunds: FormEventHandler<HTMLFormElement>;
   onShowAudit: (lot: Lot) => void;
   onBeginAuth: () => void;
   onCancelLot: (lot: Lot) => void;
@@ -30,16 +28,12 @@ export function LotDetailsModal({
   audit,
   user,
   wallet,
-  bidValue,
-  deposit,
-  busy,
+  bidForm,
+  depositForm,
+  cancelling,
   formatCurrency,
   onClose,
   onBackToLot,
-  onBidValueChange,
-  onDepositChange,
-  onMakeBid,
-  onAddFunds,
   onShowAudit,
   onBeginAuth,
   onCancelLot
@@ -95,19 +89,19 @@ export function LotDetailsModal({
             </div>
             <Countdown endsAt={lot.endsAt} />
             {lot.status === "OPEN" && user?.role === "BIDDER" && (
-              <form className="bid-form" onSubmit={onMakeBid}>
+              <form className="bid-form" onSubmit={bidForm.handleSubmit}>
                 <TextInput
                   label="O teu lance (R$)"
+                  {...bidForm.register("amount", { valueAsNumber: true })}
                   type="number"
                   min="0.01"
                   step="0.01"
                   required
-                  value={bidValue}
-                  onChange={(event) => onBidValueChange(event.target.value)}
                   placeholder={`mín. ${((lot.currentBid ?? lot.startingBid) + (lot.currentBid === null ? 0 : lot.minimumIncrement)) / 100}`}
                 />
-                <button className="button button-primary full-button" disabled={busy}>
-                  {busy ? "A enviar..." : "Fazer lance"} <Gavel size={16} />
+                {bidForm.errors.amount?.message && <small role="alert">{String(bidForm.errors.amount.message)}</small>}
+                <button className="button button-primary full-button" disabled={bidForm.isSubmitting || !bidForm.isValid}>
+                  {bidForm.isSubmitting ? "A enviar..." : "Fazer lance"} <Gavel size={16} />
                 </button>
                 <small>
                   Disponível: {formatCurrency(wallet?.available ?? 0)} · Incremento mínimo: {formatCurrency(lot.minimumIncrement)}
@@ -123,25 +117,25 @@ export function LotDetailsModal({
               <button
                 type="button"
                 className="button button-outline full-button"
-                disabled={busy}
+                disabled={cancelling}
                 onClick={() => onCancelLot(lot)}
               >
                 {lot.currentBid ? "Cancelar lote e estornar lance" : "Cancelar lote"}
               </button>
             )}
             {user?.role === "BIDDER" && (
-              <form className="deposit-form" onSubmit={onAddFunds}>
+              <form className="deposit-form" onSubmit={depositForm.handleSubmit}>
                 <TextInput
                   label="Adicionar saldo simulado"
-                  value={deposit}
-                  onChange={(event) => onDepositChange(event.target.value)}
+                  {...depositForm.register("amount", { valueAsNumber: true })}
                   type="number"
                   min="1"
                   step="0.01"
                   placeholder="Valor em R$"
                   required
                 />
-                <button className="icon-button" aria-label="Adicionar saldo">
+                {depositForm.errors.amount?.message && <small role="alert">{String(depositForm.errors.amount.message)}</small>}
+                <button className="icon-button" aria-label="Adicionar saldo" disabled={depositForm.isSubmitting || !depositForm.isValid}>
                   <ArrowDownToLine size={17} />
                 </button>
               </form>

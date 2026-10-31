@@ -7,3 +7,4 @@ export * from "./PokemonSearch";
 export * from "./SelectInput";
 export * from "./ThemeToggle";
 export * from "./TextInput";
+export * from "./ToastNotification";

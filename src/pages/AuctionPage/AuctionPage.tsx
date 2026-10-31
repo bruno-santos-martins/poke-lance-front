@@ -1,15 +1,20 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "react";
 import { io } from "socket.io-client";
-import { AlertTriangle, X } from "lucide-react";
-import { API_BASE_URL as API } from "../../shared/api/request";
+import { AlertTriangle } from "lucide-react";
+import { API_BASE_URL as API, request } from "../../shared/api/request";
+import { ToastNotification } from "../../shared/components";
 import { SiteFooter } from "../../shared/layout";
-import { convertReaisToCentavos, formatCurrencyBRL } from "../../shared/utils";
+import { formatCurrencyBRL } from "../../shared/utils";
 import "./AuctionPage.css";
 import { AuctionHeader } from "./components/AuctionHeader";
 import { AuctionHero } from "./components/AuctionHero";
 import { AuctionListings } from "./components/AuctionListings";
 import { TrustStrip } from "./components/TrustStrip";
-import { AuthModal, BidderModals, CreateLotModal, LotDetailsModal, SellerModals } from "./components/modals";
+import { AuthModal, BidderModals, ConfirmationModal, CreateLotModal, LotDetailsModal, SellerModals } from "./components/modals";
+import { useAuthForm } from "./hooks/useAuthForm";
+import { useBidForm } from "./hooks/useBidForm";
+import { useCreateLotForm } from "./hooks/useCreateLotForm";
+import { useDepositForm } from "./hooks/useDepositForm";
 
 import type {
   Audit,
@@ -23,18 +28,6 @@ import type {
   User,
   Wallet
 } from "./AuctionPage.types";
-
-async function request<T>(path: string, token?: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API}/api${path}`, {
-    ...init,
-    headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers }
-  });
-  let data: { error?: string; [key: string]: unknown };
-  try { data = await response.json() as { error?: string; [key: string]: unknown }; }
-  catch { throw new Error("O servidor devolveu uma resposta inválida."); }
-  if (!response.ok) throw new Error(data.error ?? "Não foi possível concluir o pedido.");
-  return data as T;
-}
 
 function searchPokemon(query: string, signal: AbortSignal): Promise<PokemonSuggestion[]> {
   return request<PokemonSuggestion[]>(`/pokemon/search?q=${encodeURIComponent(query)}`, undefined, { signal });
@@ -60,8 +53,6 @@ export default function AuctionPage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [busy, setBusy] = useState(false);
-  const [deposit, setDeposit] = useState("");
-  const [bidValue, setBidValue] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedPokemon, setSelectedPokemon] = useState<PokemonPreview | null>(null);
   const [walletOpen, setWalletOpen] = useState(false);
@@ -95,8 +86,61 @@ export default function AuctionPage() {
       try { setWallet(await request<Wallet>("/wallet", token)); } catch (reason) { setError((reason as Error).message); }
     } else setWallet(null);
   }, [token, user]);
+  const authForm = useAuthForm({
+    mode: authMode,
+    onAuthenticated: (result) => {
+      localStorage.setItem("auction-token", result.token);
+      localStorage.setItem("auction-user", JSON.stringify(result.user));
+      setToken(result.token);
+      setUser(result.user);
+      setAuthOpen(false);
+      setNotice(`Bem-vindo, ${result.user.name}!`);
+    },
+    onError: setError
+  });
+
+  const createLotForm = useCreateLotForm({
+    token,
+    pokemon: selectedPokemon,
+    onCreated: () => {
+      setCreateOpen(false);
+      setNotice("Lote criado com imagem armazenada localmente.");
+      void loadLots();
+    },
+    onError: setError
+  });
+
+  const bidForm = useBidForm({
+    token,
+    lot: selected,
+    onBidPlaced: async (lot) => {
+      setNotice("Lance registado e saldo comprometido.");
+      await Promise.all([loadLots(), loadWallet()]);
+      setSelected(await request<Lot>(`/lots/${lot.id}`));
+    },
+    onError: setError
+  });
+
+  const depositForm = useDepositForm({
+    token,
+    onDeposited: async () => {
+      setNotice("Saldo adicionado à carteira.");
+      await loadWallet();
+    },
+    onError: setError
+  });
+
+  const walletDepositForm = useDepositForm({
+    token,
+    onDeposited: async () => {
+      setNotice("Saldo adicionado à carteira.");
+      await loadWallet();
+    },
+    onError: setError
+  });
 
   useEffect(() => { void loadLots(); }, [loadLots]);
+
   useEffect(() => {
     const socket = io(API, { auth: token ? { token } : {} });
     const refreshSelected = () => {
@@ -110,6 +154,7 @@ export default function AuctionPage() {
     if (selected) socket.emit("lot:join", selected.id);
     return () => { if (selected) socket.emit("lot:leave", selected.id); socket.disconnect(); };
   }, [selected, loadLots, token]);
+
   useEffect(() => { void loadWallet(); }, [loadWallet]);
   useEffect(() => {
     if (!notice && !error) return;
@@ -124,6 +169,18 @@ export default function AuctionPage() {
   }, [auctionedCards, auctionedCardsSearch]);
   const auctionedCardsPageCount = Math.max(1, Math.ceil(filteredAuctionedCards.length / 20));
   const visibleAuctionedCards = filteredAuctionedCards.slice((auctionedCardsPage - 1) * 20, auctionedCardsPage * 20);
+  const hasOpenModal = Boolean(
+    authOpen
+    || createOpen
+    || selected
+    || walletOpen
+    || reportOpen
+    || sellerAuditOpen
+    || bidderReportOpen
+    || acquiredCardsOpen
+    || auctionedCardsOpen
+    || selectedWinner
+  );
   const filteredSellerAudit = useMemo(() => {
     const pokemonFilter = sellerAuditPokemonFilter.trim().toLocaleLowerCase();
     return sellerAudit.filter((entry) => {
@@ -139,54 +196,27 @@ export default function AuctionPage() {
   const visibleSellerAudit = filteredSellerAudit.slice((sellerAuditPage - 1) * 6, sellerAuditPage * 6);
   const closeSession = () => { localStorage.removeItem("auction-token"); localStorage.removeItem("auction-user"); setToken(""); setUser(null); setWallet(null); };
   const beginAuth = () => { setError(""); setAuthOpen(true); };
-
-  async function submitAuth(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setBusy(true); setError("");
-    const form = new FormData(event.currentTarget);
-    try {
-      const result = await request<{ token: string; user: User }>("/auth/" + authMode, undefined, { method: "POST", body: JSON.stringify({ name: form.get("name"), email: form.get("email"), password: form.get("password"), role: form.get("role") }) });
-      localStorage.setItem("auction-token", result.token); localStorage.setItem("auction-user", JSON.stringify(result.user));
-      setToken(result.token); setUser(result.user); setAuthOpen(false); setNotice(`Bem-vindo, ${result.user.name}!`);
-    } catch (reason) { setError((reason as Error).message); }
-    finally { setBusy(false); }
-  }
-
-  async function makeBid(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault(); if (!selected) return; setBusy(true); setError("");
-    try {
-      await request(`/lots/${selected.id}/bids`, token, { method: "POST", body: JSON.stringify({ amount: convertReaisToCentavos(Number(bidValue)) }) });
-      setNotice("Lance registado e saldo comprometido."); setBidValue(""); await Promise.all([loadLots(), loadWallet()]);
-      setSelected(await request<Lot>(`/lots/${selected.id}`));
-    } catch (reason) { setError((reason as Error).message); }
-    finally { setBusy(false); }
-  }
-
-  async function addFunds(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setBusy(true);
-    try { await request("/wallet/deposits", token, { method: "POST", body: JSON.stringify({ amount: convertReaisToCentavos(Number(deposit)) }) }); setDeposit(""); setNotice("Saldo adicionado à carteira."); await loadWallet(); }
-    catch (reason) { setError((reason as Error).message); }
-    finally { setBusy(false); }
-  }
+  const closeAllModals = () => {
+    setAuthOpen(false);
+    setCreateOpen(false);
+    setSelected(null);
+    setAudit(null);
+    setWalletOpen(false);
+    setReportOpen(false);
+    setSellerAuditOpen(false);
+    setBidderReportOpen(false);
+    setAcquiredCardsOpen(false);
+    setAuctionedCardsOpen(false);
+    setSelectedWinner(null);
+  };
+  const handleModalBackdropMouseDown = (event: MouseEvent<HTMLDivElement>) => {
+    if (event.target === event.currentTarget) closeAllModals();
+  };
 
   async function showAudit(lot: Lot) {
     setSelected(lot); setAudit(null); setError("");
     try { setAudit(await request<Audit>(`/lots/${lot.id}/audit`)); }
     catch (reason) { setError((reason as Error).message); }
-  }
-
-  async function createLot(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setBusy(true);
-    const form = new FormData(event.currentTarget);
-    if (!selectedPokemon) {
-      setError("Escolha um Pokémon na lista de sugestões.");
-      setBusy(false);
-      return;
-    }
-    try {
-      await request("/lots", token, { method: "POST", body: JSON.stringify({ pokemon: String(selectedPokemon.id), startingBid: convertReaisToCentavos(Number(form.get("startingBid"))), minimumIncrement: convertReaisToCentavos(Number(form.get("increment"))), durationMinutes: Number(form.get("duration")) }) });
-      setCreateOpen(false); setNotice("Lote criado com imagem armazenada localmente."); await loadLots();
-    } catch (reason) { setError((reason as Error).message); }
-    finally { setBusy(false); }
   }
 
   async function cancelLot(lot: Lot) {
@@ -295,6 +325,7 @@ export default function AuctionPage() {
         onOpenWallet={() => setWalletOpen(true)}
         onCreateLot={() => {
           setSelectedPokemon(null);
+          createLotForm.reset({ startingBid: undefined, increment: 1, duration: 60 });
           setCreateOpen(true);
         }}
         onToggleProfileMenu={() => setProfileMenuOpen((open) => !open)}
@@ -327,160 +358,155 @@ export default function AuctionPage() {
         />
       </main>
 
-      {(authOpen || createOpen || selected || walletOpen || reportOpen || sellerAuditOpen || bidderReportOpen || acquiredCardsOpen || auctionedCardsOpen || selectedWinner) && <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) { setAuthOpen(false); setCreateOpen(false); setSelected(null); setAudit(null); setWalletOpen(false); setReportOpen(false); setSellerAuditOpen(false); setBidderReportOpen(false); setAcquiredCardsOpen(false); setAuctionedCardsOpen(false); setSelectedWinner(null); } }}>
-        {authOpen && (
-          <AuthModal
-            mode={authMode}
-            busy={busy}
-            onClose={() => setAuthOpen(false)}
-            onSubmit={submitAuth}
-            onToggleMode={() => setAuthMode((mode) => mode === "login" ? "register" : "login")}
-          />
-        )}
+      {hasOpenModal && (
+        <div className="modal-backdrop" onMouseDown={handleModalBackdropMouseDown}>
+          {authOpen && (
+            <AuthModal
+              mode={authMode}
+              form={authForm}
+              onClose={() => {
+                setAuthOpen(false);
+                authForm.reset({ name: "", email: "", password: "", role: "BIDDER" });
+              }}
+              onToggleMode={() => setAuthMode((mode) => mode === "login" ? "register" : "login")}
+            />
+          )}
 
-        {createOpen && (
-          <CreateLotModal
-            busy={busy}
-            selectedPokemon={selectedPokemon}
-            searchPokemon={searchPokemon}
-            loadPokemon={loadPokemon}
-            onClose={() => setCreateOpen(false)}
-            onSubmit={createLot}
-            onPokemonSelectionChange={setSelectedPokemon}
-          />
-        )}
+          {createOpen && (
+            <CreateLotModal
+              form={createLotForm}
+              selectedPokemon={selectedPokemon}
+              searchPokemon={searchPokemon}
+              loadPokemon={loadPokemon}
+              onClose={() => setCreateOpen(false)}
+              onPokemonSelectionChange={setSelectedPokemon}
+            />
+          )}
 
-        <SellerModals
-          formatCurrency={money}
-          walletModal={{
-            open: walletOpen,
-            wallet,
-            deposit,
-            busy,
-            onClose: () => setWalletOpen(false),
-            onDepositChange: setDeposit,
-            onAddFunds: addFunds
-          }}
-          financialReport={{
-            open: reportOpen,
-            report,
-            onClose: () => setReportOpen(false)
-          }}
-          audit={{
-            open: sellerAuditOpen,
-            entries: sellerAudit,
-            visibleEntries: visibleSellerAudit,
-            filteredCount: filteredSellerAudit.length,
-            loading: sellerAuditLoading,
-            filter: sellerAuditPokemonFilter,
-            fromDate: sellerAuditFromDate,
-            toDate: sellerAuditToDate,
-            page: sellerAuditPage,
-            pageCount: sellerAuditPageCount,
-            onClose: () => setSellerAuditOpen(false),
-            onFilterChange: (value) => {
-              setSellerAuditPokemonFilter(value);
-              setSellerAuditPage(1);
-            },
-            onFromDateChange: (value) => {
-              setSellerAuditFromDate(value);
-              setSellerAuditPage(1);
-            },
-            onToDateChange: (value) => {
-              setSellerAuditToDate(value);
-              setSellerAuditPage(1);
-            },
-            onPageChange: setSellerAuditPage
-          }}
-          auctionedCards={{
-            open: auctionedCardsOpen,
-            cards: auctionedCards,
-            visibleCards: visibleAuctionedCards,
-            filteredCount: filteredAuctionedCards.length,
-            loading: auctionedCardsLoading,
-            search: auctionedCardsSearch,
-            page: auctionedCardsPage,
-            pageCount: auctionedCardsPageCount,
-            onClose: () => setAuctionedCardsOpen(false),
-            onSearchChange: setAuctionedCardsSearch,
-            onPageChange: setAuctionedCardsPage,
-            onOpenHistory: (card) => void showAuctionedLotHistory(card),
-            onShowWinner: setSelectedWinner
-          }}
-          winner={{
-            selected: selectedWinner,
-            onClose: () => setSelectedWinner(null)
-          }}
-        />
-
-        <BidderModals
-          report={bidderReport}
-          loading={bidderReportLoading}
-          error={bidderReportError}
-          reportOpen={bidderReportOpen}
-          acquiredCardsOpen={acquiredCardsOpen}
-          formatCurrency={money}
-          onCloseReport={() => setBidderReportOpen(false)}
-          onRetryReport={() => void showBidderReport()}
-          onCloseAcquiredCards={() => setAcquiredCardsOpen(false)}
-          onRetryAcquiredCards={() => void showAcquiredCards()}
-        />
-
-        {selected && (
-          <LotDetailsModal
-            lot={selected}
-            audit={audit}
-            user={user}
-            wallet={wallet}
-            bidValue={bidValue}
-            deposit={deposit}
-            busy={busy}
+          <SellerModals
             formatCurrency={money}
-            onClose={() => {
-              setSelected(null);
-              setAudit(null);
+            walletModal={{
+              open: walletOpen,
+              wallet,
+              form: walletDepositForm,
+              onClose: () => setWalletOpen(false),
             }}
-            onBackToLot={() => setAudit(null)}
-            onBidValueChange={setBidValue}
-            onDepositChange={setDeposit}
-            onMakeBid={makeBid}
-            onAddFunds={addFunds}
-            onShowAudit={(lot) => void showAudit(lot)}
-            onBeginAuth={() => {
-              setSelected(null);
-              beginAuth();
+            financialReport={{
+              open: reportOpen,
+              report,
+              onClose: () => setReportOpen(false)
             }}
-            onCancelLot={setLotPendingCancellation}
+            audit={{
+              open: sellerAuditOpen,
+              entries: sellerAudit,
+              visibleEntries: visibleSellerAudit,
+              filteredCount: filteredSellerAudit.length,
+              loading: sellerAuditLoading,
+              filter: sellerAuditPokemonFilter,
+              fromDate: sellerAuditFromDate,
+              toDate: sellerAuditToDate,
+              page: sellerAuditPage,
+              pageCount: sellerAuditPageCount,
+              onClose: () => setSellerAuditOpen(false),
+              onFilterChange: (value) => {
+                setSellerAuditPokemonFilter(value);
+                setSellerAuditPage(1);
+              },
+              onFromDateChange: (value) => {
+                setSellerAuditFromDate(value);
+                setSellerAuditPage(1);
+              },
+              onToDateChange: (value) => {
+                setSellerAuditToDate(value);
+                setSellerAuditPage(1);
+              },
+              onPageChange: setSellerAuditPage
+            }}
+            auctionedCards={{
+              open: auctionedCardsOpen,
+              cards: auctionedCards,
+              visibleCards: visibleAuctionedCards,
+              filteredCount: filteredAuctionedCards.length,
+              loading: auctionedCardsLoading,
+              search: auctionedCardsSearch,
+              page: auctionedCardsPage,
+              pageCount: auctionedCardsPageCount,
+              onClose: () => setAuctionedCardsOpen(false),
+              onSearchChange: setAuctionedCardsSearch,
+              onPageChange: setAuctionedCardsPage,
+              onOpenHistory: (card) => void showAuctionedLotHistory(card),
+              onShowWinner: setSelectedWinner
+            }}
+            winner={{
+              selected: selectedWinner,
+              onClose: () => setSelectedWinner(null)
+            }}
           />
-        )}
-      </div>}
-      {lotPendingCancellation && <div
-        className="modal-backdrop cancellation-backdrop"
-        onMouseDown={(event) => {
-          if (event.target === event.currentTarget && !busy) setLotPendingCancellation(null);
-        }}
-      >
-        <section className="modal cancellation-modal" role="alertdialog" aria-modal="true" aria-labelledby="cancel-lot-title" aria-describedby="cancel-lot-description">
-          <button type="button" className="cancellation-close" aria-label="Fechar confirmação" disabled={busy} onClick={() => setLotPendingCancellation(null)}>
-            <X size={18} />
-          </button>
-          <div className="cancellation-icon"><AlertTriangle size={22} /></div>
-          <div className="modal-kicker">CANCELAMENTO DE LOTE</div>
-          <h2 id="cancel-lot-title">Cancelar {lotPendingCancellation.title}?</h2>
-          <p id="cancel-lot-description">
-            {lotPendingCancellation.currentBid
-              ? "O lote será removido da vitrine. O valor do lance atual será estornado à carteira do licitante e o histórico será mantido."
-              : "O lote será removido da vitrine. Esta ação não pode ser desfeita."}
-          </p>
-          <div className="cancellation-actions">
-            <button type="button" className="button button-outline" disabled={busy} onClick={() => setLotPendingCancellation(null)}>Manter lote</button>
-            <button type="button" className="button cancellation-confirm" disabled={busy} onClick={() => void cancelLot(lotPendingCancellation)}>
-              {busy ? "A cancelar..." : "Confirmar cancelamento"}
-            </button>
-          </div>
-        </section>
-      </div>}
-      {(notice || error) && <div className={`toast ${error ? "toast-error" : ""}`}><span>{error || notice}</span><button onClick={() => { setError(""); setNotice(""); }}><X size={15} /></button></div>}
+
+          <BidderModals
+            report={bidderReport}
+            loading={bidderReportLoading}
+            error={bidderReportError}
+            reportOpen={bidderReportOpen}
+            acquiredCardsOpen={acquiredCardsOpen}
+            formatCurrency={money}
+            onCloseReport={() => setBidderReportOpen(false)}
+            onRetryReport={() => void showBidderReport()}
+            onCloseAcquiredCards={() => setAcquiredCardsOpen(false)}
+            onRetryAcquiredCards={() => void showAcquiredCards()}
+          />
+
+          {selected && (
+            <LotDetailsModal
+              lot={selected}
+              audit={audit}
+              user={user}
+              wallet={wallet}
+              bidForm={bidForm}
+              depositForm={depositForm}
+              cancelling={busy}
+              formatCurrency={money}
+              onClose={() => {
+                setSelected(null);
+                setAudit(null);
+              }}
+              onBackToLot={() => setAudit(null)}
+              onShowAudit={(lot) => void showAudit(lot)}
+              onBeginAuth={() => {
+                setSelected(null);
+                beginAuth();
+              }}
+              onCancelLot={setLotPendingCancellation}
+            />
+          )}
+        </div>
+      )}
+      {lotPendingCancellation && (
+        <ConfirmationModal
+          kicker="CANCELAMENTO DE LOTE"
+          title={`Cancelar ${lotPendingCancellation.title}?`}
+          description={lotPendingCancellation.currentBid
+            ? "O lote será removido da vitrine. O valor do lance atual será estornado à carteira do licitante e o histórico será mantido."
+            : "O lote será removido da vitrine. Esta ação não pode ser desfeita."}
+          icon={<AlertTriangle size={22} />}
+          cancelLabel="Manter lote"
+          confirmLabel="Confirmar cancelamento"
+          pendingLabel="A cancelar..."
+          isPending={busy}
+          onCancel={() => setLotPendingCancellation(null)}
+          onConfirm={() => void cancelLot(lotPendingCancellation)}
+        />
+      )}
+      {(notice || error) && (
+        <ToastNotification
+          message={error || notice}
+          variant={error ? "error" : "success"}
+          onDismiss={() => {
+            setError("");
+            setNotice("");
+          }}
+        />
+      )}
     </div>
   );
 }

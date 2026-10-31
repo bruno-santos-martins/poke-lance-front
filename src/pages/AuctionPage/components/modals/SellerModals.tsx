@@ -1,8 +1,9 @@
-import type { FormEventHandler } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight, Mail, PackageCheck, Search, UserRound } from "lucide-react";
 import { API_BASE_URL as API } from "../../../../shared/api/request";
 import { ModalClose, TextInput } from "../../../../shared/components";
+import type { FormController } from "../../../../shared/forms/formTypes";
 import { formatDate, formatDateTime, formatPokemonId } from "../../../../shared/utils";
+import type { DepositFormValues } from "../../schemas/deposit.schema";
 import type { SellerAuditEntry, SellerAuctionedLot, SellerReport, Wallet } from "../../AuctionPage.types";
 
 type SellerModalsProps = {
@@ -10,11 +11,8 @@ type SellerModalsProps = {
   walletModal: {
     open: boolean;
     wallet: Wallet | null;
-    deposit: string;
-    busy: boolean;
+    form: FormController<DepositFormValues>;
     onClose: () => void;
-    onDepositChange: (value: string) => void;
-    onAddFunds: FormEventHandler<HTMLFormElement>;
   };
   financialReport: {
     open: boolean;
@@ -108,18 +106,18 @@ export function SellerModals({
             <div><small>COMPROMETIDO</small><b>{formatCurrency(walletModal.wallet?.committed ?? 0)}</b></div>
             <div><small>SALDO TOTAL</small><b>{formatCurrency(walletModal.wallet?.balance ?? 0)}</b></div>
           </div>
-          <form className="deposit-form wallet-deposit" onSubmit={walletModal.onAddFunds}>
+          <form className="deposit-form wallet-deposit" onSubmit={walletModal.form.handleSubmit}>
             <TextInput
               label="Adicionar saldo simulado"
-              value={walletModal.deposit}
-              onChange={(event) => walletModal.onDepositChange(event.target.value)}
+              {...walletModal.form.register("amount", { valueAsNumber: true })}
               type="number"
               min="1"
               step="0.01"
               placeholder="Valor em R$"
               required
             />
-            <button className="button button-primary" disabled={walletModal.busy}>Depositar</button>
+            {walletModal.form.errors.amount?.message && <small role="alert">{String(walletModal.form.errors.amount.message)}</small>}
+            <button className="button button-primary" disabled={walletModal.form.isSubmitting || !walletModal.form.isValid}>Depositar</button>
           </form>
           <p>Os depósitos são simulados e atualizam a carteira imediatamente.</p>
         </div>
