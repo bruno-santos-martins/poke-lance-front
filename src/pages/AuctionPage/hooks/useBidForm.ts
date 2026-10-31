@@ -1,10 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { getErrorMessage, request } from "../../../shared/api/request";
 import { convertReaisToCentavos } from "../../../shared/utils";
 import type { Lot } from "../AuctionPage.types";
-import { bidSchema, type BidFormValues } from "../schemas/bid.schema";
+import { getBidSchema, getMinimumBidInCentavos, type BidFormValues } from "../schemas/bid.schema";
 
 type UseBidFormOptions = {
   lot: Lot | null;
@@ -13,19 +13,23 @@ type UseBidFormOptions = {
 };
 
 export function useBidForm({ lot, onBidPlaced, onError }: UseBidFormOptions) {
+  const minimumBidRef = useRef(0);
+  minimumBidRef.current = lot ? getMinimumBidInCentavos(lot) : 0;
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting, isValid }
   } = useForm<BidFormValues>({
-    resolver: zodResolver(bidSchema),
+    // Read the lot through a ref so the minimum follows live bid updates without recreating the form.
+    resolver: (values, context, options) =>
+      zodResolver(getBidSchema(minimumBidRef.current))(values, context, options),
     mode: "onChange",
     defaultValues: { amount: undefined }
   });
 
   useEffect(() => {
-    reset({ amount: undefined });
+    reset();
   }, [lot?.id, reset]);
 
   const submit = handleSubmit(async (values) => {
@@ -36,7 +40,7 @@ export function useBidForm({ lot, onBidPlaced, onError }: UseBidFormOptions) {
         method: "POST",
         body: JSON.stringify({ amount: convertReaisToCentavos(values.amount) })
       });
-      reset({ amount: undefined });
+      reset();
       await onBidPlaced(lot);
     } catch (error) {
       onError(getErrorMessage(error));

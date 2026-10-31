@@ -15,6 +15,7 @@ export function ThemeToggle() {
     <Button
       variant="secondary"
       className="theme-toggle"
+      data-cy="theme-toggle"
       aria-label={`Ativar tema ${nextTheme === "dark" ? "escuro" : "claro"}`}
       title={`Tema atual: ${currentThemeLabel}`}
       onClick={() => setTheme(nextTheme)}

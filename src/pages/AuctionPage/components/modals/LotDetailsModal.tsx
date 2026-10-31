@@ -3,7 +3,7 @@ import { API_BASE_URL as API } from "../../../../shared/api/request";
 import { Countdown, ModalClose, PokemonTypeBadge, TextInput } from "../../../../shared/components";
 import type { FormController } from "../../../../shared/forms/formTypes";
 import { formatDateTime, formatPokemonId } from "../../../../shared/utils";
-import type { BidFormValues } from "../../schemas/bid.schema";
+import { getMinimumBidInCentavos, type BidFormValues } from "../../schemas/bid.schema";
 import type { DepositFormValues } from "../../schemas/deposit.schema";
 import type { Audit, Lot, User, Wallet } from "../../AuctionPage.types";
 
@@ -39,7 +39,7 @@ export function LotDetailsModal({
   onCancelLot
 }: LotDetailsModalProps) {
   return (
-    <div className="modal lot-modal">
+    <div className="modal lot-modal" data-cy="lot-modal">
       <ModalClose onClose={onClose} />
       {audit ? (
         <>
@@ -85,22 +85,23 @@ export function LotDetailsModal({
             </div>
             <div className="detail-price">
               <small>LANCE ATUAL</small>
-              <b>{formatCurrency(lot.currentBid ?? lot.startingBid)}</b>
+              <b data-cy="lot-current-bid">{formatCurrency(lot.currentBid ?? lot.startingBid)}</b>
             </div>
             <Countdown endsAt={lot.endsAt} />
             {lot.status === "OPEN" && user?.role === "BIDDER" && (
               <form className="bid-form" onSubmit={bidForm.handleSubmit}>
                 <TextInput
                   label="O teu lance (R$)"
+                  data-cy="input-bid"
                   {...bidForm.register("amount", { valueAsNumber: true })}
                   type="number"
                   min="0.01"
                   step="0.01"
                   required
-                  placeholder={`mín. ${((lot.currentBid ?? lot.startingBid) + (lot.currentBid === null ? 0 : lot.minimumIncrement)) / 100}`}
+                  placeholder={`mín. ${getMinimumBidInCentavos(lot) / 100}`}
                 />
-                {bidForm.errors.amount?.message && <small role="alert">{String(bidForm.errors.amount.message)}</small>}
-                <button className="button button-primary full-button" disabled={bidForm.isSubmitting || !bidForm.isValid}>
+                {bidForm.errors.amount?.message && <small role="alert" data-cy="bid-error">{String(bidForm.errors.amount.message)}</small>}
+                <button className="button button-primary full-button" data-cy="btn-submit-bid" disabled={bidForm.isSubmitting || !bidForm.isValid}>
                   {bidForm.isSubmitting ? "A enviar..." : "Fazer lance"} <Gavel size={16} />
                 </button>
                 <small>
@@ -109,7 +110,7 @@ export function LotDetailsModal({
               </form>
             )}
             {lot.status === "OPEN" && !user && (
-              <button className="button button-primary full-button" onClick={onBeginAuth}>
+              <button className="button button-primary full-button" data-cy="btn-login-to-bid" onClick={onBeginAuth}>
                 Entra para fazer um lance <ArrowRight size={16} />
               </button>
             )}

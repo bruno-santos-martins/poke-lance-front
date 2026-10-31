@@ -46,7 +46,7 @@ export function AuctionHeader({
         <>
           <ThemeToggle />
           {user?.role === "BIDDER" && wallet && (
-            <button className="wallet-pill" onClick={onOpenWallet}>
+            <button className="wallet-pill" data-cy="wallet-pill" onClick={onOpenWallet}>
               <WalletCards size={16} />
               <span><b>{formatCurrency(wallet.available)}</b><small> disponível</small></span>
             </button>
@@ -62,6 +62,7 @@ export function AuctionHeader({
                 <button
                     type="button"
                     className="user-avatar"
+                  data-cy="user-avatar"
                   aria-label={`Abrir perfil de ${user.name}`}
                   aria-expanded={profileMenuOpen}
                   onClick={onToggleProfileMenu}
@@ -92,12 +93,12 @@ export function AuctionHeader({
                   </div>
                 )}
               </div>
-              <button className="button button-outline button-small logout-button" onClick={onLogout} title="Terminar sessão">
+              <button className="button button-outline button-small logout-button" data-cy="btn-logout" onClick={onLogout} title="Terminar sessão">
                 <LogOut size={14} /> Sair
               </button>
             </>
           ) : (
-            <button className="button button-outline button-small" onClick={onLogin}>
+            <button className="button button-outline button-small" data-cy="btn-login" onClick={onLogin}>
               Entrar <ArrowRight size={15} />
             </button>
           )}

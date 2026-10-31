@@ -28,7 +28,7 @@ export function useDepositForm({ onDeposited, onError }: UseDepositFormOptions) 
         method: "POST",
         body: JSON.stringify({ amount: convertReaisToCentavos(values.amount) })
       });
-      reset({ amount: undefined });
+      reset();
       await onDeposited();
     } catch (error) {
       onError(getErrorMessage(error));

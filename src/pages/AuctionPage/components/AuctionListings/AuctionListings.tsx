@@ -43,7 +43,7 @@ export function AuctionListings({
         </div>
       </div>
       {!lots.length ? (
-        <div className="empty-state">
+        <div className="empty-state" data-cy="empty-state">
           <div className="empty-icon"><Gavel /></div>
           <h3>Nenhum lote por aqui</h3>
           <p>Volta mais tarde para encontrar novas cartas na vitrine.</p>
@@ -51,7 +51,7 @@ export function AuctionListings({
       ) : (
         <div className="lot-grid">
           {lots.map((lot, index) => (
-            <article className="lot-card" key={lot.id}>
+            <article className="lot-card" data-cy="lot-card" key={lot.id}>
               <button
                 className="card-image"
                 onClick={() => onOpenLot(lot)}
@@ -75,7 +75,7 @@ export function AuctionListings({
                   </div>
                 </div>
                 <div className="bid-info">
-                  <div><small>LANCE ATUAL</small><strong>{formatCurrency(lot.currentBid ?? lot.startingBid)}</strong></div>
+                  <div><small>LANCE ATUAL</small><strong data-cy="card-current-bid">{formatCurrency(lot.currentBid ?? lot.startingBid)}</strong></div>
                   <div className="bid-count"><Gavel size={15} /><span>{lot.latestBidder ?? "Sem lances"}</span></div>
                 </div>
                 <div className="card-footer">
@@ -84,7 +84,7 @@ export function AuctionListings({
                     <button title="Validar auditoria" onClick={() => onShowAudit(lot)} className="icon-button">
                       <ShieldCheck size={17} />
                     </button>
-                    <button className="button button-primary button-small" onClick={() => onOpenLot(lot)}>
+                    <button className="button button-primary button-small" data-cy="btn-open-lot" onClick={() => onOpenLot(lot)}>
                       Ver lote <ArrowRight size={15} />
                     </button>
                   </div>

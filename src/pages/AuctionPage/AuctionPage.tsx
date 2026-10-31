@@ -158,6 +158,8 @@ export default function AuctionPage() {
 
   useEffect(() => {
     const socket = io(API, { withCredentials: true });
+    // Lets E2E tests replay server events; only exposed when the page runs under Cypress.
+    if ("Cypress" in window) (window as Window & { __auctionSocket?: typeof socket }).__auctionSocket = socket;
     const refreshSelected = () => {
       void loadLots();
       if (selected) void request<Lot>(`/lots/${selected.id}`).then(setSelected).catch((reason: Error) => setError(reason.message));

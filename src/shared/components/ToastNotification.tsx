@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import "./ToastNotification.css";
 
 type ToastNotificationProps = {
   message: string;
@@ -8,7 +9,7 @@ type ToastNotificationProps = {
 
 export function ToastNotification({ message, variant, onDismiss }: ToastNotificationProps) {
   return (
-    <div className={`toast ${variant === "error" ? "toast-error" : ""}`} role={variant === "error" ? "alert" : "status"}>
+    <div data-cy="toast" className={`toast ${variant === "error" ? "toast-error" : ""}`} role={variant === "error" ? "alert" : "status"}>
       <span>{message}</span>
       <button type="button" aria-label="Dispensar notificação" onClick={onDismiss}>
         <X size={15} />

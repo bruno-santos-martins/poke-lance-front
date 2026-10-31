@@ -1,0 +1,3 @@
+.toast { position: fixed; z-index: 20; right: 24px; bottom: 24px; max-width: min(430px, calc(100vw - 35px)); padding: 13px 13px 13px 17px; display: flex; align-items: center; gap: 20px; border: 1px solid var(--palette-dcebd8); border-radius: 6px; background: var(--palette-f4fbf1); color: var(--palette-3c7636); box-shadow: 0 8px 30px var(--palette-00000012); font-size: 11px; }
+.toast-error { border-color: var(--palette-f0d7cf); background: var(--palette-fff6f3); color: var(--palette-b33d2b); }
+.toast button { display: grid; place-items: center; padding: 3px; border: 0; background: var(--color-transparent); color: inherit; }

@@ -29,7 +29,7 @@ export function Countdown({
     && remainingMilliseconds < urgentThresholdMilliseconds;
 
   return (
-    <span className={`${styles.countdown}${isUrgent ? ` ${styles.urgent}` : ""}`}>
+    <span data-cy="countdown" className={`${styles.countdown}${isUrgent ? ` ${styles.urgent}` : ""}`}>
       <Clock3 size={15} aria-hidden="true" />
       {remainingMilliseconds ? formatCountdownLabel(remainingMilliseconds) : expiredLabel}
     </span>
