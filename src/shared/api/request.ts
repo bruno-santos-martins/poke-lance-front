@@ -1,4 +1,25 @@
-export const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
+function getApiBaseUrl(): string {
+  const configuredUrl = import.meta.env.VITE_API_URL;
+  if (configuredUrl) {
+    if (import.meta.env.DEV && typeof window !== "undefined") {
+      const apiUrl = new URL(configuredUrl);
+      const localHosts = new Set(["localhost", "127.0.0.1"]);
+      if (localHosts.has(window.location.hostname) && localHosts.has(apiUrl.hostname)) {
+        apiUrl.hostname = window.location.hostname;
+        return apiUrl.toString().replace(/\/$/, "");
+      }
+    }
+    return configuredUrl;
+  }
+
+  if (import.meta.env.DEV && typeof window !== "undefined") {
+    return `${window.location.protocol}//${window.location.hostname}:4000`;
+  }
+
+  return "http://localhost:4000";
+}
+
+export const API_BASE_URL = getApiBaseUrl();
 
 export class ApiError extends Error {
   constructor(message: string, readonly status: number) {

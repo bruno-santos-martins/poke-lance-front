@@ -42,6 +42,7 @@ npm run dev
 ```
 
 O Vite disponibiliza a aplicação em `http://localhost:5173`.
+Em desenvolvimento, o cliente ajusta `localhost`/`127.0.0.1` na URL da API para usar o mesmo host da página, evitando que o navegador omita o cookie de sessão. Em outros ambientes, configure `CLIENT_ORIGIN` no backend com a origem exata do frontend e `VITE_API_URL` com a URL da API.
 
 ## Scripts
 

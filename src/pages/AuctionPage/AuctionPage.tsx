@@ -96,6 +96,14 @@ export default function AuctionPage() {
   });
   const createLotForm = useCreateLotForm({
     pokemon: selectedPokemon,
+    onAuthenticationRequired: () => {
+      setUser(null);
+      setCreateOpen(false);
+      setSelectedPokemon(null);
+      setAuthMode("login");
+      setAuthOpen(true);
+      setError("Sua sessão expirou ou não foi enviada. Entre novamente para criar o lote.");
+    },
     onCreated: () => {
       setCreateOpen(false);
       setNotice("Lote criado com imagem armazenada localmente.");
