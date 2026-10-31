@@ -3,4 +3,7 @@ export * from "./Button";
 export * from "./Countdown";
 export * from "./ModalClose";
 export * from "./PokemonTypeBadge";
+export * from "./PokemonSearch";
+export * from "./SelectInput";
 export * from "./ThemeToggle";
+export * from "./TextInput";

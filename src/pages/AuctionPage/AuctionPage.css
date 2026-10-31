@@ -47,8 +47,8 @@
 .section-heading h2 span { color: var(--palette-a4a098); font-weight: 500; }
 .section-tools { display: flex; align-items: center; gap: 15px; }
 .searchbox { width: 225px; height: 38px; display: flex; align-items: center; gap: 8px; padding: 0 11px; border: 1px solid var(--palette-e8e5df); border-radius: 5px; background: var(--color-surface); color: var(--palette-99958e); }
-.searchbox input { width: 100%; border: 0; outline: 0; background: var(--color-transparent); color: var(--color-foreground); font-size: 11px; }
-.searchbox input::placeholder { color: var(--palette-a6a29a); }
+.searchbox .text-input { width: 100%; border: 0; outline: 0; background: var(--color-transparent); color: var(--color-foreground); font-size: 11px; }
+.searchbox .text-input::placeholder { color: var(--palette-a6a29a); }
 .live-label { display: flex; align-items: center; gap: 8px; color: var(--palette-6d6962); font-size: 9px; font-weight: 700; letter-spacing: 1.1px; }
 .lot-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
 .lot-card { min-width: 0; overflow: hidden; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); transition: transform .2s ease, box-shadow .2s ease; }
@@ -100,38 +100,8 @@
 .modal > p { margin: 0 0 23px; color: var(--palette-858178); font-size: 12px; line-height: 1.6; }
 .form-stack { display: grid; gap: 14px; }
 .form-stack label, .bid-form label, .deposit-form label { display: grid; gap: 7px; color: var(--palette-67635b); font-size: 10px; font-weight: 700; }
-.form-stack input, .form-stack select, .bid-form input, .deposit-form input { width: 100%; height: 42px; padding: 0 11px; border: 1px solid var(--palette-e6e3dd); border-radius: 5px; outline: 0; background: var(--color-surface); color: var(--color-foreground); font-size: 12px; }
-.form-stack input:focus, .form-stack select:focus, .bid-form input:focus, .deposit-form input:focus { border-color: var(--palette-d77b58); box-shadow: 0 0 0 3px var(--palette-e85c2a14); }
-.pokemon-search { position: relative; }
-.pokemon-search input { padding-right: 95px; }
-.pokemon-search-status { position: absolute; top: 50%; right: 12px; color: var(--palette-a09b91); font-size: 9px; font-weight: 500; transform: translateY(-50%); }
-.pokemon-suggestions { position: absolute; z-index: 5; top: calc(100% + 5px); right: 0; left: 0; overflow: hidden; border: 1px solid var(--palette-e8e4dc); border-radius: 6px; background: var(--color-surface); box-shadow: 0 12px 30px var(--palette-28211618); }
-.pokemon-suggestions button { width: 100%; min-height: 43px; padding: 0 12px; display: flex; align-items: center; gap: 11px; border: 0; border-bottom: 1px solid var(--palette-f0eee9); background: var(--color-surface); color: var(--palette-3a3832); text-align: left; }
-.pokemon-suggestions button:last-child { border-bottom: 0; }
-.pokemon-suggestions button:hover, .pokemon-suggestions button.active { background: var(--palette-fbf5ef); }
-.pokemon-suggestion-id { min-width: 39px; color: var(--palette-a29c91); font-size: 9px; font-variant-numeric: tabular-nums; }
-.pokemon-suggestion-name { flex: 1; font-size: 11px; font-weight: 700; text-transform: capitalize; }
-.pokemon-suggestions button svg { color: var(--palette-ca6741); }
-.pokemon-no-results { padding: 12px; color: var(--palette-8d887f); font-size: 10px; font-weight: 500; }
-.pokemon-hint, .pokemon-selected { display: block; margin-top: 6px; font-size: 9px; font-weight: 500; }
-.pokemon-hint { color: var(--palette-9a958c); }
-.pokemon-selected { color: var(--palette-54884e); }
-.pokemon-details-error { display: block; margin-top: 6px; color: var(--color-status-danger-foreground); font-size: 10px; font-weight: 600; }
-.pokemon-preview { display: grid; grid-template-columns: minmax(110px, .75fr) minmax(0, 1fr); gap: 14px; padding: 12px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface-muted); }
-.pokemon-preview-art { min-height: 158px; display: grid; place-items: center; overflow: hidden; border-radius: 6px; background: var(--color-surface); }
-.pokemon-preview-art img { width: 100%; height: 158px; object-fit: contain; }
-.pokemon-preview-details { min-width: 0; align-self: center; }
-.pokemon-preview-number { color: var(--color-muted); font-size: 8px; font-weight: 700; letter-spacing: .8px; }
-.pokemon-preview-details h3 { margin: 5px 0 7px; color: var(--color-foreground); font: 800 19px/1.1 var(--font-display); text-transform: capitalize; }
-.pokemon-preview-types { display: flex; flex-wrap: wrap; gap: 5px; }
-.pokemon-preview-measures { display: flex; gap: 18px; margin-top: 11px; }
-.pokemon-preview-measures span, .pokemon-preview-stats span { display: grid; gap: 3px; }
-.pokemon-preview-measures small, .pokemon-preview-stats small { color: var(--color-muted); font-size: 7px; font-weight: 700; text-transform: uppercase; }
-.pokemon-preview-measures b { color: var(--color-foreground); font-size: 10px; }
-.pokemon-preview-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px 9px; margin-top: 11px; }
-.pokemon-preview-stats span { min-width: 0; }
-.pokemon-preview-stats small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pokemon-preview-stats b { color: var(--color-foreground); font: 700 10px var(--font-display); }
+.form-stack .text-input, .bid-form .text-input, .deposit-form .text-input { width: 100%; height: 42px; padding: 0 11px; border: 1px solid var(--palette-e6e3dd); border-radius: 5px; outline: 0; background: var(--color-surface); color: var(--color-foreground); font-size: 12px; }
+.form-stack .text-input:focus, .bid-form .text-input:focus, .deposit-form .text-input:focus { border-color: var(--palette-d77b58); box-shadow: 0 0 0 3px var(--palette-e85c2a14); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
 .modal-switch { margin-top: 18px; text-align: center; color: var(--palette-88847d); font-size: 11px; }
 .modal-switch button { border: 0; background: var(--color-transparent); color: var(--color-brand-primary); font-weight: 700; }
@@ -207,11 +177,11 @@
 .seller-audit-modal { width: min(100%, 720px); }
 .seller-audit-filters { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(125px, auto) minmax(125px, auto); align-items: end; gap: 10px; margin: 18px 0 12px; }
 .seller-audit-filters > label:not(.seller-audit-search) { display: grid; gap: 5px; color: var(--color-muted); font-size: 9px; font-weight: 700; }
-.seller-audit-filters input { width: 100%; height: 38px; min-width: 0; padding: 0 9px; border: 1px solid var(--color-border); border-radius: 6px; outline: 0; background: var(--color-surface); color: var(--color-foreground); font: inherit; font-size: 10px; }
-.seller-audit-filters input:focus { border-color: var(--color-brand-primary); box-shadow: 0 0 0 3px var(--palette-e85c2a14); }
+.seller-audit-filters .text-input { width: 100%; height: 38px; min-width: 0; padding: 0 9px; border: 1px solid var(--color-border); border-radius: 6px; outline: 0; background: var(--color-surface); color: var(--color-foreground); font: inherit; font-size: 10px; }
+.seller-audit-filters .text-input:focus { border-color: var(--color-brand-primary); box-shadow: 0 0 0 3px var(--palette-e85c2a14); }
 .seller-audit-search { height: 38px; min-width: 0; padding: 0 10px; display: flex; align-items: center; gap: 8px; border: 1px solid var(--color-border); border-radius: 6px; color: var(--color-muted); }
-.seller-audit-search input { height: 34px; padding: 0; border: 0; background: var(--color-transparent); }
-.seller-audit-search input:focus { border: 0; box-shadow: none; }
+.seller-audit-search .text-input { height: 34px; padding: 0; border: 0; background: var(--color-transparent); }
+.seller-audit-search .text-input:focus { border: 0; box-shadow: none; }
 .seller-audit-count { margin-bottom: 7px; color: var(--color-muted); font-size: 9px; }
 .seller-audit-list { max-height: min(58vh, 500px); overflow: auto; border-top: 1px solid var(--color-border); }
 .seller-audit-entry { display: grid; gap: 5px; padding: 12px 2px; border-bottom: 1px solid var(--color-border); }
@@ -236,7 +206,7 @@
 .acquired-cards-empty span { font-size: 10px; }
 .auctioned-cards-modal { width: min(100%, 900px); }
 .auctioned-search { height: 39px; margin-top: 18px; padding: 0 11px; display: flex; align-items: center; gap: 9px; border: 1px solid var(--palette-e8e5df); border-radius: 6px; color: var(--palette-99958e); }
-.auctioned-search input { width: 100%; border: 0; outline: 0; background: var(--color-transparent); color: var(--color-foreground); font-size: 11px; }
+.auctioned-search .text-input { width: 100%; border: 0; outline: 0; background: var(--color-transparent); color: var(--color-foreground); font-size: 11px; }
 .auctioned-cards-count { margin: 13px 0 8px; color: var(--palette-969188); font-size: 9px; }
 .auctioned-cards-grid { max-height: min(53vh, 470px); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; overflow: auto; }
 .auctioned-card { min-width: 0; min-height: 91px; padding: 9px; display: grid; grid-template-columns: 61px minmax(0, 1fr) auto; align-items: center; gap: 7px 10px; border: 1px solid var(--palette-efede8); border-radius: 7px; background: var(--color-surface); color: inherit; }
@@ -311,9 +281,6 @@
   .detail-art { min-height: 220px; }
   .detail-art img { height: 195px; }
   .detail-copy h2 { font-size: 22px; }
-  .pokemon-preview { grid-template-columns: 95px minmax(0, 1fr); gap: 10px; padding: 9px; }
-  .pokemon-preview-art, .pokemon-preview-art img { min-height: 128px; height: 128px; }
-  .pokemon-preview-stats { gap: 6px; }
 }
 
 :root[data-theme="dark"] .trust-strip,
@@ -354,12 +321,10 @@
 :root[data-theme="dark"] .wallet-pill,
 :root[data-theme="dark"] .searchbox,
 :root[data-theme="dark"] .icon-button,
-:root[data-theme="dark"] .form-stack input,
-:root[data-theme="dark"] .form-stack select,
-:root[data-theme="dark"] .bid-form input,
-:root[data-theme="dark"] .deposit-form input,
-:root[data-theme="dark"] .pokemon-suggestions,
-:root[data-theme="dark"] .pokemon-suggestions button,
+:root[data-theme="dark"] .form-stack .text-input,
+:root[data-theme="dark"] .form-stack .select-input,
+:root[data-theme="dark"] .bid-form .text-input,
+:root[data-theme="dark"] .deposit-form .text-input,
 :root[data-theme="dark"] .auctioned-card,
 :root[data-theme="dark"] .acquired-card {
   background: var(--color-control);
@@ -368,15 +333,13 @@
 }
 
 :root[data-theme="dark"] .wallet-pill b,
-:root[data-theme="dark"] .searchbox input,
-:root[data-theme="dark"] .auctioned-search input,
-:root[data-theme="dark"] .pokemon-suggestions button {
+:root[data-theme="dark"] .searchbox .text-input,
+:root[data-theme="dark"] .auctioned-search .text-input {
   color: var(--color-foreground);
 }
 
 :root[data-theme="dark"] .card-image,
 :root[data-theme="dark"] .detail-art,
-:root[data-theme="dark"] .pokemon-preview,
 :root[data-theme="dark"] .acquired-card > img,
 :root[data-theme="dark"] .auctioned-card > img,
 :root[data-theme="dark"] .report-total,
@@ -385,13 +348,7 @@
   background: var(--color-surface-muted);
 }
 
-:root[data-theme="dark"] .pokemon-preview-art {
-  background: var(--color-control);
-}
-
-:root[data-theme="dark"] .profile-menu button:hover,
-:root[data-theme="dark"] .pokemon-suggestions button:hover,
-:root[data-theme="dark"] .pokemon-suggestions button.active {
+:root[data-theme="dark"] .profile-menu button:hover {
   background: var(--color-surface-muted);
   color: var(--color-foreground);
 }

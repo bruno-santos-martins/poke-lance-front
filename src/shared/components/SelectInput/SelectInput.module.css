@@ -1,0 +1,26 @@
+.select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  padding: 0 11px;
+  border: 1px solid var(--palette-e6e3dd);
+  border-radius: 5px;
+  outline: 0;
+  background: var(--color-surface);
+  color: var(--color-foreground);
+  font-size: 12px;
+}
+
+.select:focus {
+  border-color: var(--palette-d77b58);
+  box-shadow: 0 0 0 3px var(--palette-e85c2a14);
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+  color: var(--palette-67635b);
+  font-size: 10px;
+  font-weight: 700;
+}

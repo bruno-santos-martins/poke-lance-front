@@ -1,6 +1,6 @@
 import { ArrowRight, Gavel, Heart, Search, ShieldCheck } from "lucide-react";
 import { API_BASE_URL } from "../../../../shared/api/request";
-import { Countdown, PokemonTypeBadge } from "../../../../shared/components";
+import { Countdown, PokemonTypeBadge, TextInput } from "../../../../shared/components";
 import { formatPokemonId } from "../../../../shared/utils";
 import type { Lot } from "../../AuctionPage.types";
 
@@ -29,10 +29,16 @@ export function AuctionListings({
           <h2>Leilões <span>em destaque</span></h2>
         </div>
         <div className="section-tools">
-          <label className="searchbox">
+          <div className="searchbox">
             <Search size={16} />
-            <input value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Pesquisar Pokémon..." />
-          </label>
+            <TextInput
+              variant="search"
+              aria-label="Pesquisar Pokémon"
+              value={query}
+              onChange={(event) => onQueryChange(event.target.value)}
+              placeholder="Pesquisar Pokémon..."
+            />
+          </div>
           <div className="live-label"><span className="live-dot" /> AO VIVO</div>
         </div>
       </div>
