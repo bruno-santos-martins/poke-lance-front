@@ -50,30 +50,126 @@
 .searchbox .text-input { width: 100%; border: 0; outline: 0; background: var(--color-transparent); color: var(--color-foreground); font-size: 11px; }
 .searchbox .text-input::placeholder { color: var(--palette-a6a29a); }
 .live-label { display: flex; align-items: center; gap: 8px; color: var(--palette-6d6962); font-size: 9px; font-weight: 700; letter-spacing: 1.1px; }
-.lot-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-.lot-card { min-width: 0; overflow: hidden; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); transition: transform .2s ease, box-shadow .2s ease; }
-.lot-card:hover { transform: translateY(-3px); box-shadow: 0 14px 35px var(--palette-39322410); }
-.card-image { position: relative; width: 100%; height: 218px; padding: 0; display: grid; place-items: center; overflow: hidden; border: 0; background: var(--palette-f6f3ed); }
-.card-image::after { content: ""; position: absolute; inset: 52% 0 0; background: linear-gradient(transparent, var(--palette-eee9df66)); pointer-events: none; }
-.card-image img { width: 68%; height: 80%; object-fit: contain; filter: drop-shadow(0 13px 10px var(--palette-51442c21)); transition: transform .25s ease; }
-.card-image:hover img { transform: scale(1.05); }
-.card-number, .card-image-caption { position: absolute; z-index: 1; left: 14px; color: var(--palette-89847a); font-size: 8px; font-weight: 700; letter-spacing: 1.15px; }
-.card-number { top: 15px; }
-.card-image-caption { bottom: 13px; font-size: 7px; letter-spacing: 1px; }
-.card-heart { position: absolute; z-index: 2; top: 11px; right: 12px; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--palette-fff9); color: var(--palette-9a958b); }
-.card-content { padding: 16px 16px 13px; }
-.card-title-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.card-subtitle { margin-bottom: 4px; color: var(--palette-a09b91); font-size: 8px; font-weight: 700; letter-spacing: 1.25px; }
-.card-title-row h3 { margin: 0; font: 700 17px var(--font-display); letter-spacing: -.4px; text-transform: capitalize; }
+.lot-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.lot-card { min-width: 0; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-surface); overflow: hidden; }
+
+/* ── Type-based CSS variables ── */
+.lot-card { --tcg-color: #c9aa6a; --tcg-bg: #f8f3e8; --tcg-art-bg: #f2ece0; }
+.lot-card[data-type="fire"]     { --tcg-color: #e8632a; --tcg-bg: #fce8d8; --tcg-art-bg: #f7d9c4; }
+.lot-card[data-type="water"]    { --tcg-color: #4090c4; --tcg-bg: #ddeef8; --tcg-art-bg: #cce4f2; }
+.lot-card[data-type="grass"]    { --tcg-color: #5aaa30; --tcg-bg: #e6f5e0; --tcg-art-bg: #d5edcc; }
+.lot-card[data-type="electric"] { --tcg-color: #c8a018; --tcg-bg: #fdf4cc; --tcg-art-bg: #f8edb8; }
+.lot-card[data-type="psychic"]  { --tcg-color: #cc3880; --tcg-bg: #fae0ef; --tcg-art-bg: #f4cce2; }
+.lot-card[data-type="ice"]      { --tcg-color: #50b8b8; --tcg-bg: #e4f6f6; --tcg-art-bg: #cfeeee; }
+.lot-card[data-type="dragon"]   { --tcg-color: #6038e8; --tcg-bg: #ece8ff; --tcg-art-bg: #ddd8fa; }
+.lot-card[data-type="dark"]     { --tcg-color: #585068; --tcg-bg: #eceaf2; --tcg-art-bg: #dddae8; }
+.lot-card[data-type="fairy"]    { --tcg-color: #d870a0; --tcg-bg: #fce8f3; --tcg-art-bg: #f8d8eb; }
+.lot-card[data-type="fighting"] { --tcg-color: #c82820; --tcg-bg: #fbe4e2; --tcg-art-bg: #f5d0ce; }
+.lot-card[data-type="poison"]   { --tcg-color: #9838a0; --tcg-bg: #f4e4f8; --tcg-art-bg: #ead4f0; }
+.lot-card[data-type="ground"]   { --tcg-color: #c89820; --tcg-bg: #f8f0d8; --tcg-art-bg: #f2e6c0; }
+.lot-card[data-type="flying"]   { --tcg-color: #8890e0; --tcg-bg: #eeeeff; --tcg-art-bg: #e0e2f8; }
+.lot-card[data-type="bug"]      { --tcg-color: #90a018; --tcg-bg: #eef4d8; --tcg-art-bg: #e2ecc0; }
+.lot-card[data-type="rock"]     { --tcg-color: #b09028; --tcg-bg: #f5eedc; --tcg-art-bg: #ede2c4; }
+.lot-card[data-type="ghost"]    { --tcg-color: #685898; --tcg-bg: #ece8f8; --tcg-art-bg: #ddd8f0; }
+.lot-card[data-type="steel"]    { --tcg-color: #909090; --tcg-bg: #f0f0f0; --tcg-art-bg: #e4e4e4; }
+.lot-card[data-type="normal"]   { --tcg-color: #a09878; --tcg-bg: #f5f0e8; --tcg-art-bg: #ede8dc; }
+
+/* ── TCG card face ── */
+.tcg-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  aspect-ratio: 63 / 88;
+  padding: 0;
+  border: 0;
+  border-bottom: 3px solid var(--tcg-color, #c9aa6a);
+  background: var(--tcg-bg, #f8f3e8);
+  cursor: pointer;
+  text-align: left;
+  transition: filter .2s ease;
+}
+.tcg-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,0) 55%);
+  pointer-events: none;
+  z-index: 2;
+}
+.tcg-card:hover { filter: brightness(1.03); }
+.tcg-card:hover .tcg-art img { transform: scale(1.07); }
+
+.tcg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 8px 11px 7px;
+  background: var(--tcg-color, #c9aa6a);
+}
+.tcg-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 800 12px/1 var(--font-display);
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,.4);
+  text-transform: capitalize;
+  letter-spacing: -.2px;
+}
+.tcg-hp {
+  flex-shrink: 0;
+  font: 700 9px/1 var(--font-display);
+  color: rgba(255,255,255,.92);
+  text-shadow: 0 1px 3px rgba(0,0,0,.4);
+  white-space: nowrap;
+}
+.tcg-hp em { font-style: normal; font-size: 7px; letter-spacing: .6px; margin-right: 1px; }
+
+.tcg-art {
+  flex: 1;
+  margin: 7px;
+  border-radius: 6px;
+  background: var(--tcg-art-bg, #f0ebe0);
+  border: 2px solid rgba(0,0,0,.07);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.tcg-art img {
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 10px rgba(0,0,0,.18));
+  transition: transform .25s ease;
+}
+
+.tcg-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 10px 7px;
+  gap: 6px;
+}
+.tcg-number { color: var(--palette-89847a); font-size: 7px; font-weight: 700; letter-spacing: 1.1px; flex-shrink: 0; }
+
+/* ── Auction info below the TCG card ── */
+.card-auction { padding: 12px 14px 11px; }
+.card-auction-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 9px; }
+.card-subtitle { margin-bottom: 3px; color: var(--palette-a09b91); font-size: 8px; font-weight: 700; letter-spacing: 1.25px; }
+.card-auction-name { margin: 0; font: 700 15px/1.2 var(--font-display); letter-spacing: -.3px; text-transform: capitalize; }
+.card-bid-label { display: block; color: var(--palette-9b978f); font-size: 8px; font-weight: 700; letter-spacing: 1px; }
+.card-bid-value { display: block; font: 800 17px/1 var(--font-display); letter-spacing: -.4px; white-space: nowrap; }
+
 .type-tags { display: flex; flex-wrap: wrap; gap: 5px; }
-.bid-info { display: flex; align-items: end; justify-content: space-between; padding: 15px 0 12px; margin-top: 12px; border-top: 1px solid var(--palette-f0eee9); }
-.bid-info > div:first-child { display: grid; gap: 4px; }
 .bid-info small, .detail-price small { color: var(--palette-9b978f); font-size: 8px; font-weight: 700; letter-spacing: 1px; }
-.bid-info strong { font: 800 18px var(--font-display); letter-spacing: -.4px; }
 .bid-count { display: flex; align-items: center; gap: 6px; max-width: 132px; color: var(--palette-8d8981); font-size: 9px; }
 .bid-count svg { color: var(--palette-ce6942); }
 .bid-count span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.card-footer { display: flex; align-items: center; justify-content: space-between; min-height: 38px; padding-top: 9px; border-top: 1px solid var(--palette-f0eee9); }
+.card-footer { display: flex; align-items: center; justify-content: space-between; min-height: 36px; padding-top: 8px; border-top: 1px solid var(--palette-f0eee9); gap: 6px; }
 .card-actions { display: flex; align-items: center; gap: 6px; }
 .icon-button { width: 33px; height: 33px; display: grid; place-items: center; border: 1px solid var(--palette-e8e5df); border-radius: 5px; background: var(--color-surface); color: var(--palette-89857d); }
 .icon-button:hover { border-color: var(--palette-e6a184); color: var(--color-brand-primary); }
@@ -234,7 +330,7 @@
   .floating-tag { right: 4px; }
   .trust-strip { padding: 0 24px; }
   .trust-strip span { font-size: 9px; }
-  .lot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 }
 @media (max-width: 600px) {
   .wallet-pill small { display: none; }
@@ -269,8 +365,8 @@
   .section-heading h2 { font-size: 26px; }
   .section-tools { width: 100%; justify-content: space-between; }
   .searchbox { width: min(72%, 280px); }
-  .lot-grid { grid-template-columns: 1fr; gap: 14px; }
-  .card-image { height: 230px; }
+  .lot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .tcg-name { font-size: 10px; }
   .modal-backdrop { padding: 12px; align-items: center; }
   .modal { padding: 28px 22px 22px; }
   .lot-modal { max-height: 94vh; }
@@ -287,6 +383,20 @@
   background: var(--color-surface);
   color: var(--color-foreground);
   border-color: var(--color-border);
+}
+
+:root[data-theme="dark"] .tcg-card {
+  filter: brightness(.88) saturate(.9);
+}
+:root[data-theme="dark"] .tcg-card:hover {
+  filter: brightness(.95) saturate(.95);
+}
+:root[data-theme="dark"] .card-auction {
+  background: var(--color-surface);
+}
+:root[data-theme="dark"] .card-auction-name,
+:root[data-theme="dark"] .card-bid-value {
+  color: var(--color-foreground);
 }
 
 :root[data-theme="dark"] .hero {
@@ -335,7 +445,6 @@
   color: var(--color-foreground);
 }
 
-:root[data-theme="dark"] .card-image,
 :root[data-theme="dark"] .detail-art,
 :root[data-theme="dark"] .acquired-card > img,
 :root[data-theme="dark"] .auctioned-card > img,
