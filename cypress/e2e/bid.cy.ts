@@ -12,7 +12,8 @@ describe("Formulário de lance (Zod + React Hook Form)", () => {
   });
 
   it("recusa um lance abaixo do mínimo sem disparar a requisição", () => {
-    cy.get("[data-cy=input-bid]").type("105");
+    // Typing "10500" gives R$ 105,00 — below the R$ 110,00 minimum.
+    cy.get("[data-cy=input-bid]").type("10500");
 
     cy.get("[data-cy=bid-error]").invoke("text").should("match", /O lance mínimo é R\$\s110,00\./);
     cy.get("[data-cy=btn-submit-bid]").should("be.disabled");
@@ -21,14 +22,13 @@ describe("Formulário de lance (Zod + React Hook Form)", () => {
     cy.get("@placeBid.all").should("have.length", 0);
   });
 
-  it("recusa entradas não numéricas, vazias e negativas", () => {
+  it("recusa entradas não numéricas e vazias", () => {
+    // Non-numeric chars are stripped: the input stays empty.
     cy.get("[data-cy=input-bid]").type("abc").should("have.value", "");
     cy.get("[data-cy=btn-submit-bid]").should("be.disabled");
 
-    cy.get("[data-cy=input-bid]").type("120").clear();
-    cy.get("[data-cy=bid-error]").should("have.text", "Informe o valor do lance.");
-
-    cy.get("[data-cy=input-bid]").type("-5");
+    // Clearing after a valid amount leaves value at zero → validation error.
+    cy.get("[data-cy=input-bid]").type("12000").clear();
     cy.get("[data-cy=bid-error]").should("have.text", "O lance deve ser maior que zero.");
     cy.get("[data-cy=btn-submit-bid]").should("be.disabled");
 
@@ -36,7 +36,8 @@ describe("Formulário de lance (Zod + React Hook Form)", () => {
   });
 
   it("aceita exatamente o lance mínimo", () => {
-    cy.get("[data-cy=input-bid]").type("110");
+    // "11000" → R$ 110,00 (phone-style mask: digits are centavos).
+    cy.get("[data-cy=input-bid]").type("11000");
 
     cy.get("[data-cy=bid-error]").should("not.exist");
     cy.get("[data-cy=btn-submit-bid]").should("be.enabled");
@@ -49,7 +50,8 @@ describe("Formulário de lance (Zod + React Hook Form)", () => {
     cy.intercept("GET", `**/api/lots/${lot.id}`, { body: updatedLot }).as("getLot");
     cy.intercept("GET", "**/api/wallet", { body: buildWallet(38000, 12000) }).as("getWallet");
 
-    cy.get("[data-cy=input-bid]").type("120");
+    // "12000" → R$ 120,00 → sends { amount: 12000 } centavos.
+    cy.get("[data-cy=input-bid]").type("12000");
     cy.get("[data-cy=btn-submit-bid]").should("be.enabled").click();
 
     cy.wait("@placeBid").its("request.body").should("deep.equal", { amount: 12000 });
@@ -65,7 +67,7 @@ describe("Formulário de lance (Zod + React Hook Form)", () => {
       body: { error: "Saldo disponível insuficiente." }
     }).as("placeBid");
 
-    cy.get("[data-cy=input-bid]").type("120");
+    cy.get("[data-cy=input-bid]").type("12000");
     cy.get("[data-cy=btn-submit-bid]").click();
 
     cy.wait("@placeBid");
