@@ -6,7 +6,7 @@ export const depositSchema = z.object({
   amount: z
     .number({ error: "Informe o valor do depósito." })
     .finite()
-    .min(1, "O depósito mínimo é R$ 1,00.")
+    .min(0.01, "O depósito mínimo é R$ 0,01.")
     .max(MAX_REAIS, "O depósito máximo é R$ 99.999.999,99.")
 });
 
