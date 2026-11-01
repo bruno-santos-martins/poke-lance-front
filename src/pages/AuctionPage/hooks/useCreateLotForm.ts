@@ -15,6 +15,7 @@ type UseCreateLotFormOptions = {
 export function useCreateLotForm({ pokemon, onCreated, onAuthenticationRequired, onError }: UseCreateLotFormOptions) {
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting, isValid }
@@ -51,5 +52,5 @@ export function useCreateLotForm({ pokemon, onCreated, onAuthenticationRequired,
     }
   });
 
-  return { register, handleSubmit: submit, errors, isSubmitting, isValid, reset };
+  return { register, control, handleSubmit: submit, errors, isSubmitting, isValid, reset };
 }

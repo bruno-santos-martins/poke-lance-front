@@ -1,9 +1,9 @@
 import { ArrowDownToLine, ArrowRight, Gavel, ShieldCheck } from "lucide-react";
 import { API_BASE_URL as API } from "../../../../shared/api/request";
-import { Countdown, ModalClose, PokemonTypeBadge, TextInput } from "../../../../shared/components";
+import { Countdown, CurrencyInput, ModalClose, PokemonTypeBadge } from "../../../../shared/components";
 import type { FormController } from "../../../../shared/forms/formTypes";
 import { formatDateTime, formatPokemonId } from "../../../../shared/utils";
-import { getMinimumBidInCentavos, type BidFormValues } from "../../schemas/bid.schema";
+import type { BidFormValues } from "../../schemas/bid.schema";
 import type { DepositFormValues } from "../../schemas/deposit.schema";
 import type { Audit, Lot, User, Wallet } from "../../AuctionPage.types";
 
@@ -90,15 +90,12 @@ export function LotDetailsModal({
             <Countdown endsAt={lot.endsAt} />
             {lot.status === "OPEN" && user?.role === "BIDDER" && (
               <form className="bid-form" onSubmit={bidForm.handleSubmit}>
-                <TextInput
+                <CurrencyInput
+                  name="amount"
+                  control={bidForm.control}
                   label="O teu lance (R$)"
                   data-cy="input-bid"
-                  {...bidForm.register("amount", { valueAsNumber: true })}
-                  type="number"
-                  min="0.01"
-                  step="0.01"
                   required
-                  placeholder={`mín. ${getMinimumBidInCentavos(lot) / 100}`}
                 />
                 {bidForm.errors.amount?.message && <small role="alert" data-cy="bid-error">{String(bidForm.errors.amount.message)}</small>}
                 <button className="button button-primary full-button" data-cy="btn-submit-bid" disabled={bidForm.isSubmitting || !bidForm.isValid}>
@@ -126,13 +123,10 @@ export function LotDetailsModal({
             )}
             {user?.role === "BIDDER" && (
               <form className="deposit-form" onSubmit={depositForm.handleSubmit}>
-                <TextInput
+                <CurrencyInput
+                  name="amount"
+                  control={depositForm.control}
                   label="Adicionar saldo simulado"
-                  {...depositForm.register("amount", { valueAsNumber: true })}
-                  type="number"
-                  min="1"
-                  step="0.01"
-                  placeholder="Valor em R$"
                   required
                 />
                 {depositForm.errors.amount?.message && <small role="alert">{String(depositForm.errors.amount.message)}</small>}

@@ -5,7 +5,7 @@ export function AuctionHero({ openLotCount }: { openLotCount: number }) {
     <section className="hero">
       <div className="hero-copy">
         <div className="eyebrow"><span className="live-dot" /> O próximo lance pode ser teu</div>
-        <h1>Encontra a tua<br /><span>próxima raridade.</span></h1>
+        <h1>Encontre a sua<br /><span>próxima raridade.</span></h1>
         <p>Cartas Pokémon, disputas ao vivo e transparência em cada lance. A tua coleção começa aqui.</p>
         <a className="button button-dark" href="#vitrine">Explorar leilões <ArrowRight size={17} /></a>
         <div className="hero-trust">

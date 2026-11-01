@@ -1,5 +1,6 @@
 export * from "./Badge";
 export * from "./Button";
+export * from "./CurrencyInput";
 export * from "./Countdown";
 export * from "./ModalClose";
 export * from "./PokemonTypeBadge";

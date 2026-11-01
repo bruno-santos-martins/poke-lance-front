@@ -16,6 +16,7 @@ type UseAuthFormOptions = {
 export function useAuthForm({ mode, onAuthenticated, onError }: UseAuthFormOptions) {
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting, isValid }
@@ -45,5 +46,5 @@ export function useAuthForm({ mode, onAuthenticated, onError }: UseAuthFormOptio
     }
   });
 
-  return { register, handleSubmit: submit, errors, isSubmitting, isValid, reset };
+  return { register, control, handleSubmit: submit, errors, isSubmitting, isValid, reset };
 }

@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import { ModalClose, PokemonSearch, SelectInput, TextInput } from "../../../../shared/components";
+import { CurrencyInput, ModalClose, PokemonSearch, SelectInput } from "../../../../shared/components";
 import type { FormController } from "../../../../shared/forms/formTypes";
 import type { PokemonPreview, PokemonSuggestion } from "../../AuctionPage.types";
 import type { CreateLotFormValues } from "../../schemas/createLot.schema";
@@ -35,8 +35,8 @@ export function CreateLotModal({
           onSelectionChange={onPokemonSelectionChange}
         />
         <div className="form-row">
-          <TextInput label="Lance inicial (R$)" {...form.register("startingBid", { valueAsNumber: true })} type="number" min="1" step="0.01" required placeholder="10.00" />
-          <TextInput label="Incremento (R$)" {...form.register("increment", { valueAsNumber: true })} type="number" min="1" step="0.01" required />
+          <CurrencyInput name="startingBid" control={form.control} label="Lance inicial (R$)" required />
+          <CurrencyInput name="increment" control={form.control} label="Incremento (R$)" required />
         </div>
         {form.errors.startingBid?.message && <small role="alert">{String(form.errors.startingBid.message)}</small>}
         {form.errors.increment?.message && <small role="alert">{String(form.errors.increment.message)}</small>}

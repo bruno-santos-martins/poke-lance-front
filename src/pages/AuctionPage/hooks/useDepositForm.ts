@@ -12,6 +12,7 @@ type UseDepositFormOptions = {
 export function useDepositForm({ onDeposited, onError }: UseDepositFormOptions) {
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting, isValid }
@@ -35,5 +36,5 @@ export function useDepositForm({ onDeposited, onError }: UseDepositFormOptions) 
     }
   });
 
-  return { register, handleSubmit: submit, errors, isSubmitting, isValid, reset };
+  return { register, control, handleSubmit: submit, errors, isSubmitting, isValid, reset };
 }

@@ -1,6 +1,6 @@
 import { ArrowRight, ChevronLeft, ChevronRight, Mail, PackageCheck, Search, UserRound } from "lucide-react";
 import { API_BASE_URL as API } from "../../../../shared/api/request";
-import { ModalClose, TextInput } from "../../../../shared/components";
+import { CurrencyInput, ModalClose, TextInput } from "../../../../shared/components";
 import type { FormController } from "../../../../shared/forms/formTypes";
 import { formatDate, formatDateTime, formatPokemonId } from "../../../../shared/utils";
 import type { DepositFormValues } from "../../schemas/deposit.schema";
@@ -107,13 +107,10 @@ export function SellerModals({
             <div><small>SALDO TOTAL</small><b>{formatCurrency(walletModal.wallet?.balance ?? 0)}</b></div>
           </div>
           <form className="deposit-form wallet-deposit" onSubmit={walletModal.form.handleSubmit}>
-            <TextInput
+            <CurrencyInput
+              name="amount"
+              control={walletModal.form.control}
               label="Adicionar saldo simulado"
-              {...walletModal.form.register("amount", { valueAsNumber: true })}
-              type="number"
-              min="1"
-              step="0.01"
-              placeholder="Valor em R$"
               required
             />
             {walletModal.form.errors.amount?.message && <small role="alert">{String(walletModal.form.errors.amount.message)}</small>}
