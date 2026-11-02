@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { io } from "socket.io-client";
 import { AlertTriangle } from "lucide-react";
-import { SOCKET_URL, ApiError, request } from "../../shared/api/request";
+import { SOCKET_URL, AUTH_TOKEN_KEY, ApiError, request } from "../../shared/api/request";
 import { ToastNotification } from "../../shared/components";
 import { SiteFooter } from "../../shared/layout";
 import { formatCurrencyBRL } from "../../shared/utils";
@@ -146,10 +146,8 @@ export default function AuctionPage() {
       .then(({ user: sessionUser }) => setUser(sessionUser))
       .catch((reason: unknown) => {
         if (reason instanceof ApiError && reason.status === 401) {
+          localStorage.removeItem(AUTH_TOKEN_KEY);
           setUser(null);
-          void request("/auth/logout", { method: "POST" }).catch((logoutError: unknown) => {
-            setError(logoutError instanceof Error ? logoutError.message : "Não foi possível encerrar a sessão.");
-          });
           return;
         }
         setError(reason instanceof Error ? reason.message : "Não foi possível validar a sessão.");
@@ -166,7 +164,11 @@ export default function AuctionPage() {
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
 
   useEffect(() => {
-    const socket = io(SOCKET_URL, { withCredentials: true, transports: ["websocket", "polling"] });
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    const socket = io(SOCKET_URL, {
+      auth: token ? { token } : {},
+      transports: ["websocket", "polling"]
+    });
     socketRef.current = socket;
     // Lets E2E tests replay server events; only exposed when the page runs under Cypress.
     if ("Cypress" in window) (window as Window & { __auctionSocket?: typeof socket }).__auctionSocket = socket;
@@ -249,6 +251,7 @@ export default function AuctionPage() {
     } catch (reason) {
       setError((reason as Error).message);
     } finally {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
       setUser(null);
       setWallet(null);
     }

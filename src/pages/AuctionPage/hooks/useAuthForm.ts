@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { getErrorMessage, request } from "../../../shared/api/request";
+import { AUTH_TOKEN_KEY, getErrorMessage, request } from "../../../shared/api/request";
 import type { User } from "../AuctionPage.types";
 import { getAuthSchema, type AuthFormValues } from "../schemas/auth.schema";
 
-type AuthResponse = { user: User };
+type AuthResponse = { user: User; token: string };
 
 type UseAuthFormOptions = {
   mode: "login" | "register";
@@ -39,6 +39,7 @@ export function useAuthForm({ mode, onAuthenticated, onError }: UseAuthFormOptio
           ? values
           : { email: values.email, password: values.password })
       });
+      localStorage.setItem(AUTH_TOKEN_KEY, result.token);
       reset();
       onAuthenticated(result);
     } catch (error) {

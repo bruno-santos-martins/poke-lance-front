@@ -46,7 +46,7 @@ describe("Autenticação", () => {
   });
 
   it("faz login com sucesso e mostra a carteira do licitante", () => {
-    cy.intercept("POST", "**/api/auth/login", { body: { user: bidder } }).as("loginRequest");
+    cy.intercept("POST", "**/api/auth/login", { body: { user: bidder, token: "mock-jwt-token" } }).as("loginRequest");
     cy.visitAsGuest();
     cy.get("[data-cy=btn-login]").click();
 
