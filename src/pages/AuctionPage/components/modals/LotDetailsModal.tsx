@@ -21,6 +21,7 @@ type LotDetailsModalProps = {
   onShowAudit: (lot: Lot) => void;
   onBeginAuth: () => void;
   onCancelLot: (lot: Lot) => void;
+  onFinalizeLot: (lot: Lot) => void;
 };
 
 export function LotDetailsModal({
@@ -36,7 +37,8 @@ export function LotDetailsModal({
   onBackToLot,
   onShowAudit,
   onBeginAuth,
-  onCancelLot
+  onCancelLot,
+  onFinalizeLot
 }: LotDetailsModalProps) {
   return (
     <div className="modal lot-modal" data-cy="lot-modal">
@@ -112,14 +114,25 @@ export function LotDetailsModal({
               </button>
             )}
             {lot.status === "OPEN" && user?.role === "AUCTIONEER" && lot.sellerId === user.id && (
-              <button
-                type="button"
-                className="button button-outline full-button"
-                disabled={cancelling}
-                onClick={() => onCancelLot(lot)}
-              >
-                {lot.currentBid ? "Cancelar lote e estornar lance" : "Cancelar lote"}
-              </button>
+              <>
+                <button
+                  type="button"
+                  className="button button-primary full-button"
+                  style={{ marginBottom: "4px" }}
+                  disabled={cancelling}
+                  onClick={() => onFinalizeLot(lot)}
+                >
+                  Finalizar lote agora
+                </button>
+                <button
+                  type="button"
+                  className="button button-outline full-button"
+                  disabled={cancelling}
+                  onClick={() => onCancelLot(lot)}
+                >
+                  {lot.currentBid ? "Cancelar lote e estornar lance" : "Cancelar lote"}
+                </button>
+              </>
             )}
             {user?.role === "BIDDER" && (
               <form className="deposit-form" onSubmit={depositForm.handleSubmit}>

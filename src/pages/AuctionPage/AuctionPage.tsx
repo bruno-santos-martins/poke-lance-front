@@ -45,6 +45,7 @@ export default function AuctionPage() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [selected, setSelected] = useState<Lot | null>(null);
   const [lotPendingCancellation, setLotPendingCancellation] = useState<Lot | null>(null);
+  const [lotPendingFinalization, setLotPendingFinalization] = useState<Lot | null>(null);
   const [audit, setAudit] = useState<Audit | null>(null);
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState("");
@@ -83,6 +84,8 @@ export default function AuctionPage() {
   const loadWallet = useCallback(async () => {
     if (user?.role === "BIDDER") {
       try { setWallet(await request<Wallet>("/wallet")); } catch (reason) { setError((reason as Error).message); }
+    } else if (user?.role === "AUCTIONEER") {
+      try { setWallet(await request<Wallet>("/seller/wallet")); } catch { setWallet(null); }
     } else setWallet(null);
   }, [user]);
   const authForm = useAuthForm({
@@ -162,6 +165,7 @@ export default function AuctionPage() {
     if ("Cypress" in window) (window as Window & { __auctionSocket?: typeof socket }).__auctionSocket = socket;
     const refreshSelected = () => {
       void loadLots();
+      void loadWallet();
       if (selected) void request<Lot>(`/lots/${selected.id}`).then(setSelected).catch((reason: Error) => setError(reason.message));
     };
     socket.on("lots:updated", () => { void loadLots(); });
@@ -170,9 +174,13 @@ export default function AuctionPage() {
     socket.on("wallet:updated", (updatedWallet: Wallet) => setWallet(updatedWallet));
     if (selected) socket.emit("lot:join", selected.id);
     return () => { if (selected) socket.emit("lot:leave", selected.id); socket.disconnect(); };
-  }, [selected, loadLots]);
+  }, [selected, loadLots, loadWallet]);
 
   useEffect(() => { void loadWallet(); }, [loadWallet]);
+  useEffect(() => {
+    const id = setInterval(() => { void loadWallet(); }, 10_000);
+    return () => clearInterval(id);
+  }, [loadWallet]);
   useEffect(() => {
     if (!notice && !error) return;
     const id = window.setTimeout(() => { setNotice(""); setError(""); }, 4500);
@@ -243,6 +251,21 @@ export default function AuctionPage() {
     setSelected(lot); setAudit(null); setError("");
     try { setAudit(await request<Audit>(`/lots/${lot.id}/audit`)); }
     catch (reason) { setError((reason as Error).message); }
+  }
+
+  async function finalizeLot(lot: Lot) {
+    setBusy(true);
+    try {
+      await request(`/lots/${lot.id}/finalize`, { method: "POST" });
+      setLotPendingFinalization(null);
+      setSelected(null);
+      setNotice(lot.currentBid
+        ? `Lote finalizado. O maior lance de ${money(lot.currentBid)} venceu.`
+        : "Lote finalizado sem lances.");
+      await Promise.all([loadLots(), loadWallet()]);
+    }
+    catch (reason) { setError((reason as Error).message); }
+    finally { setBusy(false); }
   }
 
   async function cancelLot(lot: Lot) {
@@ -503,9 +526,26 @@ export default function AuctionPage() {
                 beginAuth();
               }}
               onCancelLot={setLotPendingCancellation}
+              onFinalizeLot={setLotPendingFinalization}
             />
           )}
         </div>
+      )}
+      {lotPendingFinalization && (
+        <ConfirmationModal
+          kicker="FINALIZAR LOTE"
+          title={`Finalizar ${lotPendingFinalization.title} agora?`}
+          description={lotPendingFinalization.currentBid
+            ? `O lote será encerrado imediatamente. Quem deu o maior lance até agora (${money(lotPendingFinalization.currentBid)}) será o vencedor.`
+            : "O lote será encerrado imediatamente. Como ainda não há lances, nenhum vencedor será atribuído."}
+          icon={<AlertTriangle size={22} />}
+          cancelLabel="Voltar"
+          confirmLabel="Finalizar lote"
+          pendingLabel="A finalizar..."
+          isPending={busy}
+          onCancel={() => setLotPendingFinalization(null)}
+          onConfirm={() => void finalizeLot(lotPendingFinalization)}
+        />
       )}
       {lotPendingCancellation && (
         <ConfirmationModal

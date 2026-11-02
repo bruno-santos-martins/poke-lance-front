@@ -51,6 +51,12 @@ export function AuctionHeader({
               <span><b>{formatCurrency(wallet.available)}</b><small> disponível</small></span>
             </button>
           )}
+          {user?.role === "AUCTIONEER" && wallet && (
+            <div className="wallet-pill">
+              <WalletCards size={16} />
+              <span><b>{formatCurrency(wallet.balance)}</b><small> recebido</small></span>
+            </div>
+          )}
           {user?.role === "AUCTIONEER" && (
             <button className="button button-primary button-small" onClick={onCreateLot}>
               <Plus size={16} /> Criar lote
