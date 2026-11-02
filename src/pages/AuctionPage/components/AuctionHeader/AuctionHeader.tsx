@@ -38,7 +38,7 @@ export function AuctionHeader({
     <SiteHeader
       brandHref="/"
       navigationItems={[
-        { label: "Vitrine", href: "#vitrine", isActive: true },
+        { label: "Vitrine", href: "/" },
         { label: "Como funciona", href: "/como-funciona" }
       ]}
       actionsClassName="header-actions"

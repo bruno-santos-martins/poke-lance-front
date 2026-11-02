@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { io } from "socket.io-client";
 import { AlertTriangle } from "lucide-react";
-import { API_BASE_URL as API, ApiError, request } from "../../shared/api/request";
+import { SOCKET_URL, ApiError, request } from "../../shared/api/request";
 import { ToastNotification } from "../../shared/components";
 import { SiteFooter } from "../../shared/layout";
 import { formatCurrencyBRL } from "../../shared/utils";
@@ -142,7 +142,6 @@ export default function AuctionPage() {
   });
 
   useEffect(() => {
-    localStorage.removeItem("auction-token");
     void request<{ user: User | null }>("/auth/session")
       .then(({ user: sessionUser }) => setUser(sessionUser))
       .catch((reason: unknown) => {
@@ -159,22 +158,47 @@ export default function AuctionPage() {
 
   useEffect(() => { void loadLots(); }, [loadLots]);
 
+  const selectedIdRef = useRef<string | null>(null);
+  useEffect(() => { selectedIdRef.current = selected?.id ?? null; }, [selected?.id]);
+
+  const lotFetchControllerRef = useRef<AbortController | null>(null);
+
+  const socketRef = useRef<ReturnType<typeof io> | null>(null);
+
   useEffect(() => {
-    const socket = io(API, { withCredentials: true });
+    const socket = io(SOCKET_URL, { withCredentials: true, transports: ["websocket", "polling"] });
+    socketRef.current = socket;
     // Lets E2E tests replay server events; only exposed when the page runs under Cypress.
     if ("Cypress" in window) (window as Window & { __auctionSocket?: typeof socket }).__auctionSocket = socket;
-    const refreshSelected = () => {
+
+    function refreshCurrentLot() {
       void loadLots();
       void loadWallet();
-      if (selected) void request<Lot>(`/lots/${selected.id}`).then(setSelected).catch((reason: Error) => setError(reason.message));
-    };
+      const id = selectedIdRef.current;
+      if (!id) return;
+      lotFetchControllerRef.current?.abort();
+      const controller = new AbortController();
+      lotFetchControllerRef.current = controller;
+      void request<Lot>(`/lots/${id}`, { signal: controller.signal })
+        .then(setSelected)
+        .catch((err: Error) => { if (err.name !== "AbortError") setError(err.message); });
+    }
+
     socket.on("lots:updated", () => { void loadLots(); });
-    socket.on("bid:placed", refreshSelected);
-    socket.on("lot:updated", refreshSelected);
+    socket.on("bid:placed", refreshCurrentLot);
+    socket.on("lot:updated", refreshCurrentLot);
     socket.on("wallet:updated", (updatedWallet: Wallet) => setWallet(updatedWallet));
-    if (selected) socket.emit("lot:join", selected.id);
-    return () => { if (selected) socket.emit("lot:leave", selected.id); socket.disconnect(); };
-  }, [selected, loadLots, loadWallet]);
+
+    return () => { socket.disconnect(); socketRef.current = null; };
+  }, [loadLots, loadWallet]);
+
+  useEffect(() => {
+    const socket = socketRef.current;
+    if (!socket || !selected?.id) return;
+    const id = selected.id;
+    socket.emit("lot:join", id);
+    return () => { socket.emit("lot:leave", id); };
+  }, [selected?.id]);
 
   useEffect(() => { void loadWallet(); }, [loadWallet]);
   useEffect(() => {

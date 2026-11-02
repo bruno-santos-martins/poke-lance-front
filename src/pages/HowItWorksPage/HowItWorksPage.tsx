@@ -10,7 +10,7 @@ export default function HowItWorksPage() {
         brandHref="/"
         navigationItems={[
           { label: "Vitrine", href: "/" },
-          { label: "Como funciona", href: "/como-funciona", isActive: true }
+          { label: "Como funciona", href: "/como-funciona" }
         ]}
         actions={
           <>

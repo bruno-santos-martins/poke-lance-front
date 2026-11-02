@@ -1,3 +1,4 @@
+import { NavLink } from "react-router-dom";
 import type { SiteHeaderProps } from "./SiteHeader.types";
 import { BrandLockup } from "../BrandLockup";
 import styles from "./SiteHeader.module.css";
@@ -14,15 +15,15 @@ export function SiteHeader({
     <header className="topbar">
       <BrandLockup href={brandHref} showTagline />
       <nav className="nav-links" aria-label="Navegação principal">
-        {navigationItems.map(({ label, href, isActive = false }) => (
-          <a
+        {navigationItems.map(({ label, href }) => (
+          <NavLink
             key={href}
-            className={isActive ? "active" : undefined}
-            href={href}
-            aria-current={isActive ? "page" : undefined}
+            to={href}
+            className={({ isActive }) => isActive ? "active" : undefined}
+            end={href === "/"}
           >
             {label}
-          </a>
+          </NavLink>
         ))}
       </nav>
       <div className={actionClasses}>{actions}</div>

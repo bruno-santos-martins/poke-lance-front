@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import { ArrowRight, BadgeCheck, ShieldCheck, X } from "lucide-react";
 import { API_BASE_URL as API, request } from "../../shared/api/request";
 import { ThemeToggle } from "../../shared/components";
@@ -20,11 +21,13 @@ async function loadReceipt(receiptId: string): Promise<Receipt> {
   return request<Receipt>(`/receipts/${receiptId}`);
 }
 
-export default function ReceiptPage({ id }: { id: string }) {
+export default function ReceiptPage() {
+  const { id = "" } = useParams<{ id: string }>();
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!id) return;
     void loadReceipt(id)
       .then(setReceipt)
       .catch((reason: Error) => setError(reason.message));
@@ -66,9 +69,9 @@ export default function ReceiptPage({ id }: { id: string }) {
             <div className="receipt-privacy">
               <ShieldCheck size={16} /> Identidade do licitante protegida por pseudónimo.
             </div>
-            <a className="button button-outline full-button receipt-return" href="/">
+            <Link className="button button-outline full-button receipt-return" to="/">
               Voltar à vitrine <ArrowRight size={16} />
-            </a>
+            </Link>
           </>
         )}
       </section>

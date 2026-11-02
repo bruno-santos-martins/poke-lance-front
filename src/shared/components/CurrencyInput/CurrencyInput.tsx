@@ -15,8 +15,9 @@ function centavosToDisplay(centavos: number): string {
 export type CurrencyInputProps<T extends FieldValues> = {
   name: FieldPath<T>;
   control: Control<T>;
-  label?: string;
+  label: string;
   required?: boolean;
+  "aria-label"?: string;
   "data-cy"?: string;
 };
 
@@ -25,6 +26,7 @@ export function CurrencyInput<T extends FieldValues>({
   control,
   label,
   required,
+  "aria-label": ariaLabel,
   "data-cy": dataCy
 }: CurrencyInputProps<T>) {
   const generatedId = useId();
@@ -45,7 +47,7 @@ export function CurrencyInput<T extends FieldValues>({
 
         return (
           <label className={styles.field} htmlFor={generatedId}>
-            {label && <span>{label}</span>}
+            <span>{label}</span>
             <input
               id={generatedId}
               ref={field.ref}
@@ -57,6 +59,7 @@ export function CurrencyInput<T extends FieldValues>({
               value={centavosToDisplay(centavos)}
               onChange={handleChange}
               onBlur={field.onBlur}
+              aria-label={ariaLabel}
               data-cy={dataCy}
             />
           </label>

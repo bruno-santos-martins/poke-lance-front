@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 export type SiteNavigationItem = {
   label: string;
   href: string;
-  isActive?: boolean;
 };
 
 export type SiteHeaderProps = {

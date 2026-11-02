@@ -1,25 +1,12 @@
-function getApiBaseUrl(): string {
-  const configuredUrl = import.meta.env.VITE_API_URL;
-  if (configuredUrl) {
-    if (import.meta.env.DEV && typeof window !== "undefined") {
-      const apiUrl = new URL(configuredUrl);
-      const localHosts = new Set(["localhost", "127.0.0.1"]);
-      if (localHosts.has(window.location.hostname) && localHosts.has(apiUrl.hostname)) {
-        apiUrl.hostname = window.location.hostname;
-        return apiUrl.toString().replace(/\/$/, "");
-      }
-    }
-    return configuredUrl;
-  }
+// When VITE_API_URL is set, requests go to that host (e.g. a remote backend during dev).
+// Otherwise, relative paths are used — Vite proxies them in dev, backend serves frontend in prod.
+const configuredUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, "");
 
-  if (import.meta.env.DEV && typeof window !== "undefined") {
-    return `${window.location.protocol}//${window.location.hostname}:4000`;
-  }
+export const API_BASE_URL = configuredUrl ?? "";
 
-  return "http://localhost:4000";
-}
-
-export const API_BASE_URL = getApiBaseUrl();
+// Socket.io endpoint: explicit host when configured, otherwise current page origin (same-origin).
+export const SOCKET_URL: string =
+  configuredUrl ?? (typeof window !== "undefined" ? window.location.origin : "");
 
 export class ApiError extends Error {
   constructor(message: string, readonly status: number) {

@@ -10,7 +10,7 @@ const meta = {
   args: {
     brandHref: "/",
     navigationItems: [
-      { label: "Vitrine", href: "/", isActive: true },
+      { label: "Vitrine", href: "/" },
       { label: "Como funciona", href: "/como-funciona" }
     ],
     actions: (
